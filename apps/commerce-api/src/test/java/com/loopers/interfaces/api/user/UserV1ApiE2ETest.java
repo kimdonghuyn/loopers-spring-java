@@ -37,6 +37,7 @@ public class UserV1ApiE2ETest {
         void returnsUserInfo_whenRegistrationIsSuccessful() {
             // arrange
             UserV1Dto.SignUpRequest signUpRequest = new UserV1Dto.SignUpRequest(
+                    "loopers",
                     "hyun",
                     UserV1Dto.SignUpRequest.GenderRequest.F,
                     "loopers@naver.com",
@@ -62,6 +63,7 @@ public class UserV1ApiE2ETest {
         void returnsBadRequest_whenGenderIsMissing() {
             // arrange
             UserV1Dto.SignUpRequest signUpRequest = new UserV1Dto.SignUpRequest(
+                    "loopers",
                     "hyun",
                     null,
                     "loopers@naver.com",

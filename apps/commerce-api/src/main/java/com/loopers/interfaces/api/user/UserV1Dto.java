@@ -8,6 +8,8 @@ public class UserV1Dto {
 
     public record SignUpRequest(
             @NotNull
+            String userId,
+            @NotNull
             String name,
             @NotNull(message = "성별은 필수입니다.")
             GenderRequest gender,
@@ -23,7 +25,7 @@ public class UserV1Dto {
     }
 
     public record UserResponse(
-            Long userId,
+            String userId,
             String name,
             GenderResponse gender,
             String email,
