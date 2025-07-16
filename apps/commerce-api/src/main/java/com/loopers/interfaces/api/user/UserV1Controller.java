@@ -14,6 +14,14 @@ public class UserV1Controller implements UserV1ApiSpec {
     @PostMapping("")
     @Override
     public ApiResponse<UserV1Dto.UserResponse> signUp(@RequestBody @Valid UserV1Dto.SignUpRequest signUpRequest) {
-        return null;
+        return ApiResponse.success(
+                new UserV1Dto.UserResponse(
+                        "loopers",
+                        "hyun",
+                        UserV1Dto.GenderResponse.F,
+                        "loopers@naver.com",
+                        "2002-10-10"
+                )
+        );
     }
 }
