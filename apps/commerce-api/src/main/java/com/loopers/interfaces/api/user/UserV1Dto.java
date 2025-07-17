@@ -34,7 +34,7 @@ public class UserV1Dto {
 
     }
 
-    enum GenderResponse {
+    public enum GenderResponse {
         M,
         F
     }
