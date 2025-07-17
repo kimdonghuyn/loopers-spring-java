@@ -14,16 +14,18 @@ public class UserEntity {
     @Id
     private String userId;
     private String name;
+    private String gender;
     private String email;
     private String birth;
 
-    public UserEntity(String userId, String name, String email, String birth) {
+    public UserEntity(String userId, String name, String gender, String email, String birth) {
         UserValidator.validateUserId(userId);
         UserValidator.validateEmail(email);
         UserValidator.validateBirth(birth);
 
         this.userId = userId;
         this.name = name;
+        this.gender = gender;
         this.email = email;
         this.birth = birth;
     }

@@ -26,18 +26,19 @@ public class UserTest {
             "",
             "동현",
             "동현동현동현동현동현동현동현",
-             "hyun_____k",
+            "hyun_____k",
     })
     void fail_whenIdFormatIsInvalid(String userId) {
 
         //arrange
         final var name = "hyun";
         final var email = "loopers123@naver.com";
+        final var gender = "F";
         final var birth = "2020-02-02";
 
         //act
         final CoreException exception = assertThrows(CoreException.class, () -> {
-            new UserEntity(userId, name, email, birth);
+            new UserEntity(userId, name, gender, email, birth);
         });
 
         //assert
@@ -55,11 +56,12 @@ public class UserTest {
         //arrange
         final var userId = "loopers123";
         final var name = "hyun";
+        final var gender = "F";
         final var birth = "2020-02-02";
 
         //act
         final CoreException exception = assertThrows(CoreException.class, () -> {
-            new UserEntity(userId, name, email, birth);
+            new UserEntity(userId, name, gender, email, birth);
         });
 
         //assert
@@ -81,11 +83,12 @@ public class UserTest {
         //arrange
         final var userId = "loopers123";
         final var name = "hyun";
+        final var gender = "F";
         final var email = "loopers123@naver.com";
 
         //act
         final CoreException exception = assertThrows(CoreException.class, () -> {
-            new UserEntity(userId, name, email, birth);
+            new UserEntity(userId, name, gender, email, birth);
         });
 
         //assert
