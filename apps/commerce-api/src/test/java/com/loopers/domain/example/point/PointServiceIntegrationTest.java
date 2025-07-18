@@ -23,7 +23,7 @@ public class PointServiceIntegrationTest {
      * <p>
      * 포인트 조회
      * - [x]  해당 ID 의 회원이 존재할 경우, 보유 포인트가 반환된다.
-     * - [ ]  해당 ID 의 회원이 존재하지 않을 경우, null 이 반환된다.
+     * - [x]  해당 ID 의 회원이 존재하지 않을 경우, null 이 반환된다.
      *
      * 포인트 충전
      * - [x] 존재하지 않는 유저 ID 로 충전을 시도한 경우, 실패한다.
@@ -35,7 +35,7 @@ public class PointServiceIntegrationTest {
     @Autowired
     private PointService pointService;
 
-    @DisplayName("포인트 조회에 성공할 경우, 보유 포인트를 응답으로 반환한다.")
+    @DisplayName("해당 ID 의 회원이 존재할 경우, 보유 포인트가 반환된다.")
     @Test
     void returnsPoints_whenGetPointsIsSuccessful() {
         // arrange
@@ -59,22 +59,21 @@ public class PointServiceIntegrationTest {
         );
     }
 
-    @DisplayName("존재하지 않는 ID 로 조회할 경우, `404 Not Found` 응답을 반환한다.")
+    @DisplayName("해당 ID 의 회원이 존재하지 않을 경우, null 이 반환된다.")
     @Test
     void returnsNotFound_whenUserDoesNotExist() {
         // arrange
         String nonExistentUserId = "loopers_hyun";
 
         // act
-        CoreException exception = assertThrows(CoreException.class, () -> {
-            pointService.getUserPoint(nonExistentUserId);
-        });
+        ApiResponse<PointV1Dto.PointResponse> response = pointService.getUserPoint(nonExistentUserId);
 
         // assert
-        assertThat(exception.getErrorType()).isEqualTo(ErrorType.NOT_FOUND);
+        assertThat(response.data().point()).isNull();
+
     }
 
-    @DisplayName("존재하지 않는 유저 ID 로 포인트 충전을 시도할 경우, 실패한다.")
+    @DisplayName("존재하지 않는 유저 ID 로 충전을 시도한 경우, 실패한다.")
     @Test
     void fail_whenChargePointForNonExistentUser() {
         // arrange
