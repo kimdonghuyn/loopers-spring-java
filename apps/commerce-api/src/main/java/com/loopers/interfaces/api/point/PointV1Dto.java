@@ -6,7 +6,8 @@ public class PointV1Dto {
 
     public record PointRequest(
             @NotNull
-            String userId
+            String userId,
+            Long chargePointAmount
     ) {
     }
 

@@ -2,6 +2,7 @@ package com.loopers.interfaces.api.point;
 
 import com.loopers.domain.point.PointService;
 import com.loopers.interfaces.api.ApiResponse;
+import com.loopers.support.error.CoreException;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,4 +20,16 @@ public class PointV1Controller implements PointV1ApiSpec {
     public ApiResponse<PointV1Dto.PointResponse> getUserPoint(@RequestHeader(value = "X-USER-ID", required = true) String userId) {
         return pointService.getUserPoint(userId);
     }
+
+    @PostMapping("/charge")
+    @Override
+    public ApiResponse<PointV1Dto.PointResponse> chargePoint(@RequestHeader(value = "X-USER-ID", required = true) String userId, @RequestBody PointV1Dto.PointRequest chargePointRequest) throws CoreException {
+        return ApiResponse.success(
+                new PointV1Dto.PointResponse(
+                        userId,
+                        (pointService.getUserPoint(userId).data().point()  + chargePointRequest.chargePointAmount()))
+        );
+    }
+
+
 }
