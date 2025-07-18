@@ -1,6 +1,7 @@
 package com.loopers.domain.user;
 
 import com.loopers.infrastructure.user.UserJpaRepository;
+import com.loopers.interfaces.api.user.UserV1Dto;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
 import com.loopers.utils.DatabaseCleanUp;
@@ -12,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -20,8 +22,15 @@ import static org.mockito.Mockito.verify;
 public class UserServiceIntegrationTest {
     /**
      * 🔗 통합 테스트
-     * - [ ]  회원 가입시 User 저장이 수행된다. ( spy 검증 )
-     * - [ ]  이미 가입된 ID 로 회원가입 시도 시, 실패한다.
+     *
+     * 회원가입
+     * - [x]  회원 가입시 User 저장이 수행된다. ( spy 검증 )
+     * - [x]  이미 가입된 ID 로 회원가입 시도 시, 실패한다.
+     *
+     *  회원 정보 조회
+     * - [x]  해당 ID 의 회원이 존재할 경우, 회원 정보가 반환된다.
+     * - [x]  해당 ID 의 회원이 존재하지 않을 경우, null 이 반환된다.
+     *
      */
 
 
@@ -79,4 +88,47 @@ public class UserServiceIntegrationTest {
 
         // assert
         assertThat(exception.getErrorType()).isEqualTo(ErrorType.BAD_REQUEST);}
+
+
+    @DisplayName("해당 ID 의 회원이 존재할 경우, 회원 정보가 반환된다.")
+    @Test
+    void returnsUserInfoWhenUserExists() {
+        // arrange
+        String userId = "loopers123";
+        UserEntity user = new UserEntity(
+                "loopers123",
+                "hyun",
+                "F",
+                "loopers@naver.com",
+                "2002-10-10"
+        );
+
+        userService.register(user);
+
+        // act
+        UserV1Dto.UserResponse response = userService.getUserInfo(userId);
+
+        // assert
+        assertAll(
+                () -> assertThat(response.userId()).isEqualTo(user.getUserId()),
+                () -> assertThat(response.name()).isEqualTo(user.getName()),
+                () -> assertThat(response.gender().toString()).isEqualTo(user.getGender()),
+                () -> assertThat(response.email()).isEqualTo(user.getEmail()),
+                () -> assertThat(response.birth()).isEqualTo(user.getBirth())
+        );
+    }
+
+    @DisplayName("해당 ID 의 회원이 존재하지 않을 경우, 예외가 발생한다.")
+    @Test
+    void throwsExceptionWhenUserDoesNotExist() {
+        // arrange
+        String userId = "loopers_hyun";
+
+        // act & assert
+        CoreException exception = assertThrows(CoreException.class, () -> {
+            userService.getUserInfo(userId);
+        });
+
+        assertThat(exception.getErrorType()).isEqualTo(ErrorType.NOT_FOUND);
+    }
 }
