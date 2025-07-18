@@ -1,4 +1,4 @@
-package com.loopers.domain.example.porint;
+package com.loopers.domain.example.point;
 
 import com.loopers.domain.point.PointService;
 import com.loopers.domain.user.UserEntity;
