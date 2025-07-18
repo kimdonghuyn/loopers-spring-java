@@ -1,8 +1,7 @@
 package com.loopers.interfaces.api.user;
 
-import com.loopers.domain.example.ExampleModel;
 import com.loopers.interfaces.api.ApiResponse;
-import com.loopers.support.error.CoreException;
+import com.loopers.support.Gender;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -41,7 +40,7 @@ public class UserV1ApiE2ETest {
             UserV1Dto.SignUpRequest signUpRequest = new UserV1Dto.SignUpRequest(
                     "loopers",
                     "hyun",
-                    UserV1Dto.SignUpRequest.GenderRequest.F,
+                     Gender.F,
                     "loopers@naver.com",
                     "2002-10-10"
             );
@@ -57,7 +56,7 @@ public class UserV1ApiE2ETest {
                     () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK),
                     () -> assertThat(response.getBody()).isNotNull(),
                     () -> assertThat(response.getBody().data().name()).isEqualTo(signUpRequest.name()),
-                    () -> assertThat(response.getBody().data().gender()).isEqualTo(UserV1Dto.GenderResponse.F)
+                    () -> assertThat(response.getBody().data().gender()).isEqualTo(Gender.F)
             );
         }
 
