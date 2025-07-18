@@ -24,11 +24,7 @@ public class PointV1Controller implements PointV1ApiSpec {
     @PostMapping("/charge")
     @Override
     public ApiResponse<PointV1Dto.PointResponse> chargePoint(@RequestHeader(value = "X-USER-ID", required = true) String userId, @RequestBody PointV1Dto.PointRequest chargePointRequest) throws CoreException {
-        return ApiResponse.success(
-                new PointV1Dto.PointResponse(
-                        userId,
-                        (pointService.getUserPoint(userId).data().point()  + chargePointRequest.chargePointAmount()))
-        );
+        return pointService.chargePoint(userId, chargePointRequest.chargePointAmount());
     }
 
 
