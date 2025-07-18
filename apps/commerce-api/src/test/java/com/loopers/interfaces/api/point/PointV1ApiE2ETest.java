@@ -119,7 +119,7 @@ public class PointV1ApiE2ETest {
                     () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK),
                     () -> assertThat(response.getBody()).isNotNull(),
                     () -> assertThat(response.getBody().data().userId()).isEqualTo(userId),
-                    () -> assertThat(response.getBody().data().point()).isGreaterThanOrEqualTo(totalPoint)
+                    () -> assertThat(response.getBody().data().point()).isEqualTo(totalPoint)
             );
 
         }
