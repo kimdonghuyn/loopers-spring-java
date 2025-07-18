@@ -1,9 +1,8 @@
 package com.loopers.interfaces.api.user;
 
-import com.loopers.domain.user.UserEntity;
 import com.loopers.domain.user.UserService;
 import com.loopers.interfaces.api.ApiResponse;
-import com.loopers.support.error.CoreException;
+import com.loopers.support.Gender;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +23,7 @@ public class UserV1Controller implements UserV1ApiSpec {
                 new UserV1Dto.UserResponse(
                         "loopers",
                         "hyun",
-                        UserV1Dto.GenderResponse.F,
+                        Gender.F,
                         "loopers@naver.com",
                         "2002-10-10"
                 )

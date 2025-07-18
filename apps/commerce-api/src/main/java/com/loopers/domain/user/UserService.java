@@ -2,6 +2,7 @@ package com.loopers.domain.user;
 
 import com.loopers.infrastructure.user.UserJpaRepository;
 import com.loopers.interfaces.api.user.UserV1Dto;
+import com.loopers.support.Gender;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,7 @@ public class UserService {
         UserV1Dto.UserResponse response = new UserV1Dto.UserResponse(
                 "loopers123",
                 "hyun",
-                UserV1Dto.GenderResponse.F,
+                 Gender.F,
                 "loopers@naver.com",
                 "2002-10-10"
         );

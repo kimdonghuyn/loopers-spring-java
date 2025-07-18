@@ -1,7 +1,6 @@
 package com.loopers.interfaces.api.user;
 
-import com.loopers.support.error.CoreException;
-import com.loopers.support.error.ErrorType;
+import com.loopers.support.Gender;
 import jakarta.validation.constraints.NotNull;
 
 public class UserV1Dto {
@@ -12,30 +11,21 @@ public class UserV1Dto {
             @NotNull
             String name,
             @NotNull(message = "성별은 필수입니다.")
-            GenderRequest gender,
+            Gender gender,
             @NotNull
             String email,
             @NotNull
             String birth
     ) {
-        enum GenderRequest {
-            M,
-            F
-        }
     }
 
     public record UserResponse(
             String userId,
             String name,
-            GenderResponse gender,
+            Gender gender,
             String email,
             String birth
     ) {
 
-    }
-
-    public enum GenderResponse {
-        M,
-        F
     }
 }
