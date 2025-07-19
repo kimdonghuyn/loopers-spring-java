@@ -36,7 +36,7 @@ public class PointService {
         return ApiResponse.success(response);
     }
 
-    public ApiResponse<PointV1Dto.PointResponse> chargePoint(String userId, Long chargePointAmount) throws CoreException {
+    public ApiResponse<PointV1Dto.PointResponse> charge(String userId, Long chargePointAmount) throws CoreException {
         UserV1Dto.UserResponse userInfo = userService.getUserInfo(userId);
 
         ApiResponse<PointV1Dto.PointResponse> userPoint = getUserPoint(userId);
