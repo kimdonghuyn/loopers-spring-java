@@ -18,7 +18,7 @@ public class PointEntity {
     private Long point;
 
     public PointEntity(String userId, Long point) {
-        if (point <= 0) {
+        if (point != null && point <= 0) {
             throw new CoreException(ErrorType.BAD_REQUEST, "충전할 포인트는 0보다 커야 합니다.");
         }
         this.userId = userId;

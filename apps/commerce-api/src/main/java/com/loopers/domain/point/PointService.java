@@ -1,5 +1,6 @@
 package com.loopers.domain.point;
 
+import com.loopers.domain.user.UserEntity;
 import com.loopers.domain.user.UserService;
 import com.loopers.interfaces.api.ApiResponse;
 import com.loopers.interfaces.api.point.PointV1Dto;
@@ -9,13 +10,15 @@ import com.loopers.support.error.CoreException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class PointService {
     private final UserService userService;
 
-    public ApiResponse<PointV1Dto.PointResponse> getUserPoint(String userId) {
-        UserV1Dto.UserResponse userInfo = new UserV1Dto.UserResponse(
+    public Optional<ApiResponse<PointEntity>> getUserPoint(String userId) {
+        UserEntity userInfo = new UserEntity(
                 "loopers123",
                 "hyun",
                 Gender.F,
@@ -25,25 +28,25 @@ public class PointService {
 
         Long point = 0L;
 
-        if (!userInfo.userId().equals(userId)) {
-            point = null;
+        if (!userInfo.getUserId().equals(userId)) {
+            return null;
         } else {
             point = 100L;
         }
 
-        PointV1Dto.PointResponse response = new PointV1Dto.PointResponse(userInfo.userId(), point);
+        PointEntity response = new PointEntity(userInfo.getUserId(), point);
 
-        return ApiResponse.success(response);
+        return Optional.of(ApiResponse.success(response));
     }
 
-    public ApiResponse<PointV1Dto.PointResponse> chargePoint(String userId, Long chargePointAmount) throws CoreException {
-        UserV1Dto.UserResponse userInfo = userService.getUserInfo(userId);
+    public ApiResponse<PointEntity> charge(String userId, Long chargePointAmount) throws CoreException {
+        UserEntity userInfo = userService.getUserInfo(userId);
 
-        ApiResponse<PointV1Dto.PointResponse> userPoint = getUserPoint(userId);
+        Optional<ApiResponse<PointEntity>> userPoint = getUserPoint(userId);
 
-        PointV1Dto.PointResponse response = new PointV1Dto.PointResponse(
-                userInfo.userId(),
-                userPoint.data().point() + chargePointAmount
+        PointEntity response = new PointEntity(
+                userInfo.getUserId(),
+                userPoint.get().data().getPoint() + chargePointAmount
         );
         return ApiResponse.success(response);
     }

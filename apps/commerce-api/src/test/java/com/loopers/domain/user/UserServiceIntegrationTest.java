@@ -1,7 +1,7 @@
 package com.loopers.domain.user;
 
 import com.loopers.infrastructure.user.UserJpaRepository;
-import com.loopers.interfaces.api.user.UserV1Dto;
+import com.loopers.support.Gender;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
 import com.loopers.utils.DatabaseCleanUp;
@@ -54,7 +54,7 @@ public class UserServiceIntegrationTest {
         // arrange
         var userId = "loopers123";
         var name = "hyun";
-        var gender = "F";
+        Gender gender =Gender.F;
         var email = "loopers@naver.com";
         var birth = "2002-10-10";
 
@@ -74,7 +74,7 @@ public class UserServiceIntegrationTest {
         UserEntity user = new UserEntity(
                 "loopers123",
                 "hyun",
-                "F",
+                Gender.F,
                 "loopers@naver.com",
                 "2002-10-10"
         );
@@ -98,7 +98,7 @@ public class UserServiceIntegrationTest {
         UserEntity user = new UserEntity(
                 "loopers123",
                 "hyun",
-                "F",
+                Gender.F,
                 "loopers@naver.com",
                 "2002-10-10"
         );
@@ -106,15 +106,15 @@ public class UserServiceIntegrationTest {
         userService.register(user);
 
         // act
-        UserV1Dto.UserResponse response = userService.getUserInfo(userId);
+        UserEntity response = userService.getUserInfo(userId);
 
         // assert
         assertAll(
-                () -> assertThat(response.userId()).isEqualTo(user.getUserId()),
-                () -> assertThat(response.name()).isEqualTo(user.getName()),
-                () -> assertThat(response.gender().toString()).isEqualTo(user.getGender()),
-                () -> assertThat(response.email()).isEqualTo(user.getEmail()),
-                () -> assertThat(response.birth()).isEqualTo(user.getBirth())
+                () -> assertThat(response.getUserId()).isEqualTo(user.getUserId()),
+                () -> assertThat(response.getName()).isEqualTo(user.getName()),
+                () -> assertThat(response.getGender()).isEqualTo(user.getGender()),
+                () -> assertThat(response.getEmail()).isEqualTo(user.getEmail()),
+                () -> assertThat(response.getBirth()).isEqualTo(user.getBirth())
         );
     }
 

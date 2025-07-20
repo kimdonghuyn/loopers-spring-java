@@ -1,5 +1,6 @@
 package com.loopers.domain.user;
 
+import com.loopers.support.Gender;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -14,11 +15,11 @@ public class UserEntity {
     @Id
     private String userId;
     private String name;
-    private String gender;
+    private Gender gender;
     private String email;
     private String birth;
 
-    public UserEntity(String userId, String name, String gender, String email, String birth) {
+    public UserEntity(String userId, String name, Gender gender, String email, String birth) {
         UserValidator.validateUserId(userId);
         UserValidator.validateEmail(email);
         UserValidator.validateBirth(birth);

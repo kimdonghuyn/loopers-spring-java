@@ -8,5 +8,5 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public interface PointV1ApiSpec {
     ApiResponse<PointV1Dto.PointResponse> getUserPoint(String userId) throws CoreException;
 
-    ApiResponse<PointV1Dto.PointResponse> chargePoint(String userId, PointV1Dto.PointRequest chargePointRequest) throws CoreException;
+    ApiResponse<PointV1Dto.PointResponse> charge(String userId, PointV1Dto.PointRequest chargePointRequest) throws CoreException;
 }
