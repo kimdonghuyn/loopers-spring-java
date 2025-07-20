@@ -1,5 +1,6 @@
 package com.loopers.interfaces.api.point;
 
+import com.loopers.domain.point.PointEntity;
 import com.loopers.domain.point.PointService;
 import com.loopers.interfaces.api.ApiResponse;
 import com.loopers.support.error.CoreException;
@@ -18,13 +19,21 @@ public class PointV1Controller implements PointV1ApiSpec {
     @GetMapping("")
     @Override
     public ApiResponse<PointV1Dto.PointResponse> getUserPoint(@RequestHeader(value = "X-USER-ID", required = true) String userId) {
-        return pointService.getUserPoint(userId);
+        PointEntity pointInfo = pointService.getUserPoint(userId).get().data();
+
+        PointV1Dto.PointResponse response = PointV1Dto.PointResponse.from(pointInfo);
+
+        return ApiResponse.success(response);
     }
 
     @PostMapping("/charge")
     @Override
-    public ApiResponse<PointV1Dto.PointResponse> chargePoint(@RequestHeader(value = "X-USER-ID", required = true) String userId, @RequestBody PointV1Dto.PointRequest chargePointRequest) throws CoreException {
-        return pointService.chargePoint(userId, chargePointRequest.chargePointAmount());
+    public ApiResponse<PointV1Dto.PointResponse> charge(@RequestHeader(value = "X-USER-ID", required = true) String userId, @RequestBody PointV1Dto.PointRequest chargePointRequest) throws CoreException {
+        PointEntity pointInfo = pointService.charge(userId, chargePointRequest.chargePointAmount()).data();
+
+        PointV1Dto.PointResponse response = PointV1Dto.PointResponse.from(pointInfo);
+
+        return ApiResponse.success(response);
     }
 
 

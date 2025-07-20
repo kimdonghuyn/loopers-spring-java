@@ -1,16 +1,20 @@
 package com.loopers.domain.example.point;
 
+import com.loopers.domain.point.PointEntity;
 import com.loopers.domain.point.PointService;
 import com.loopers.domain.user.UserEntity;
 import com.loopers.domain.user.UserService;
 import com.loopers.interfaces.api.ApiResponse;
 import com.loopers.interfaces.api.point.PointV1Dto;
+import com.loopers.support.Gender;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -42,7 +46,7 @@ public class PointServiceIntegrationTest {
         UserEntity userEntity = new UserEntity(
                 "loopers123",
                 "hyun",
-                "F",
+                Gender.F,
                 "loopers@naver.com",
                 "2002-10-10"
         );
@@ -50,12 +54,12 @@ public class PointServiceIntegrationTest {
         userService.register(userEntity);
 
         // act
-        ApiResponse<PointV1Dto.PointResponse> response = pointService.getUserPoint(userService.getUserInfo(userEntity.getUserId()).userId());
+        Optional<ApiResponse<PointEntity>> response = pointService.getUserPoint(userService.getUserInfo(userEntity.getUserId()).getUserId());
 
         //assert
         assertAll(
-                () -> assertThat(response.data().userId()).isEqualTo(userEntity.getUserId()),
-                () -> assertThat(response.data().point()).isEqualTo(100)
+                () -> assertThat(response.get().data().getUserId()).isEqualTo(userEntity.getUserId()),
+                () -> assertThat(response.get().data().getPoint()).isEqualTo(100)
         );
     }
 
@@ -66,10 +70,10 @@ public class PointServiceIntegrationTest {
         String nonExistentUserId = "loopers_hyun";
 
         // act
-        ApiResponse<PointV1Dto.PointResponse> response = pointService.getUserPoint(nonExistentUserId);
+        Optional<ApiResponse<PointEntity>> response = pointService.getUserPoint(nonExistentUserId);
 
         // assert
-        assertThat(response.data().point()).isNull();
+        assertThat(response).isNull();
 
     }
 
@@ -82,7 +86,7 @@ public class PointServiceIntegrationTest {
 
         // act
         CoreException exception = assertThrows(CoreException.class, () -> {
-            pointService.chargePoint(nonExistentUserId, chargeAmount);
+            pointService.charge(nonExistentUserId, chargeAmount);
         });
 
         // assert

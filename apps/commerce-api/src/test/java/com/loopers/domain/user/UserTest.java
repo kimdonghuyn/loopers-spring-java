@@ -1,5 +1,6 @@
 package com.loopers.domain.user;
 
+import com.loopers.support.Gender;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
 import org.junit.jupiter.api.DisplayName;
@@ -33,7 +34,7 @@ public class UserTest {
         //arrange
         final var name = "hyun";
         final var email = "loopers123@naver.com";
-        final var gender = "F";
+        final var gender = Gender.F;
         final var birth = "2020-02-02";
 
         //act
@@ -56,7 +57,7 @@ public class UserTest {
         //arrange
         final var userId = "loopers123";
         final var name = "hyun";
-        final var gender = "F";
+        final var gender = Gender.F;
         final var birth = "2020-02-02";
 
         //act
@@ -83,7 +84,7 @@ public class UserTest {
         //arrange
         final var userId = "loopers123";
         final var name = "hyun";
-        final var gender = "F";
+        final var gender = Gender.F;
         final var email = "loopers123@naver.com";
 
         //act

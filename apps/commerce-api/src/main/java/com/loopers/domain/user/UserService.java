@@ -22,8 +22,8 @@ public class UserService {
         userJpaRepository.save(userEntity);
     }
 
-    public UserV1Dto.UserResponse getUserInfo(String userId) {
-        UserV1Dto.UserResponse response = new UserV1Dto.UserResponse(
+    public UserEntity getUserInfo(String userId) {
+        UserEntity response = new UserEntity(
                 "loopers123",
                 "hyun",
                  Gender.F,
@@ -31,7 +31,7 @@ public class UserService {
                 "2002-10-10"
         );
 
-        if (response.userId().equals(userId)) {
+        if (response.getUserId().equals(userId)) {
             return response;
         } else {
             throw new CoreException(ErrorType.NOT_FOUND, "해당 유저를 찾을 수 없습니다.");

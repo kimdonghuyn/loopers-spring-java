@@ -1,5 +1,6 @@
 package com.loopers.interfaces.api.user;
 
+import com.loopers.domain.user.UserEntity;
 import com.loopers.domain.user.UserService;
 import com.loopers.interfaces.api.ApiResponse;
 import com.loopers.support.Gender;
@@ -33,15 +34,12 @@ public class UserV1Controller implements UserV1ApiSpec {
     @GetMapping("/me")
     @Override
     public ApiResponse<UserV1Dto.UserResponse> getUserInfo(@RequestHeader("X-USER-ID") String userId) {
-        UserV1Dto.UserResponse response = userService.getUserInfo(userId);
+        UserEntity UserInfo = userService.getUserInfo(userId);
+
+        UserV1Dto.UserResponse response = UserV1Dto.UserResponse.from(UserInfo);
+
         return ApiResponse.success(
-                new UserV1Dto.UserResponse(
-                        response.userId(),
-                        response.name(),
-                        response.gender(),
-                        response.email(),
-                        response.birth()
-                )
+               response
         );
     }
 
