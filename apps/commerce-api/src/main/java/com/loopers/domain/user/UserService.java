@@ -1,5 +1,6 @@
 package com.loopers.domain.user;
 
+import com.loopers.application.example.user.UserResult;
 import com.loopers.infrastructure.user.UserJpaRepository;
 import com.loopers.interfaces.api.user.UserV1Dto;
 import com.loopers.support.Gender;
@@ -14,27 +15,26 @@ public class UserService {
 
     private final UserJpaRepository userJpaRepository;
 
-    public void register(UserEntity userEntity) {
-        if (userJpaRepository.existsByUserId(userEntity.getUserId())) {
+    public UserInfo signUp(UserCommand.SignUp command) {
+        UserEntity userEntity = new UserEntity(
+                new LoginId(command.loginId()),
+                command.name(),
+                new Email(command.email()),
+                new Birth(command.birth()),
+                command.gender()
+        );
+
+        if (userJpaRepository.existsByLoginId(userEntity.getLoginId())) {
             throw new CoreException(ErrorType.BAD_REQUEST);
         }
 
-        userJpaRepository.save(userEntity);
+        return UserInfo.from(userJpaRepository.save(userEntity));
     }
 
-    public UserEntity getUserInfo(String userId) {
-        UserEntity response = new UserEntity(
-                "loopers123",
-                "hyun",
-                 Gender.F,
-                "loopers@naver.com",
-                "2002-10-10"
-        );
+    public UserInfo getUserInfo(String loginId) {
 
-        if (response.getUserId().equals(userId)) {
-            return response;
-        } else {
-            throw new CoreException(ErrorType.NOT_FOUND, "해당 유저를 찾을 수 없습니다.");
-        }
+        return userJpaRepository.findByLoginId(new LoginId(loginId))
+                .map(UserInfo::from)
+                .orElseThrow(() -> new CoreException(ErrorType.NOT_FOUND));
     }
 }

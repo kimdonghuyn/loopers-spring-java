@@ -1,9 +1,7 @@
 package com.loopers.domain.user;
 
 import com.loopers.support.Gender;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -13,21 +11,20 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserEntity {
     @Id
-    private String userId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Embedded
+    private LoginId loginId;
     private String name;
+    private Email email;
+    private Birth birth;
     private Gender gender;
-    private String email;
-    private String birth;
 
-    public UserEntity(String userId, String name, Gender gender, String email, String birth) {
-        UserValidator.validateUserId(userId);
-        UserValidator.validateEmail(email);
-        UserValidator.validateBirth(birth);
-
-        this.userId = userId;
+    public UserEntity(LoginId loginId, String name,Email email, Birth birth, Gender gender) {
+        this.loginId = loginId;
         this.name = name;
-        this.gender = gender;
         this.email = email;
         this.birth = birth;
+        this.gender = gender;
     }
 }

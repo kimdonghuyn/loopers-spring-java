@@ -1,7 +1,12 @@
 package com.loopers.interfaces.api.user;
 
+import com.loopers.domain.user.UserCommand;
+import com.loopers.domain.user.UserInfo;
+import com.loopers.domain.user.UserService;
 import com.loopers.interfaces.api.ApiResponse;
 import com.loopers.support.Gender;
+import com.loopers.utils.DatabaseCleanUp;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -27,6 +32,15 @@ public class UserV1ApiE2ETest {
 
     @Autowired
     private TestRestTemplate testRestTemplate;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private DatabaseCleanUp databaseCleanUp;
+
+    @AfterEach
+    void tearDown() {
+        databaseCleanUp.truncateAllTables();
+    }
 
     @DisplayName("POST /api/v1/users")
     @Nested
@@ -40,9 +54,9 @@ public class UserV1ApiE2ETest {
             UserV1Dto.SignUpRequest signUpRequest = new UserV1Dto.SignUpRequest(
                     "loopers",
                     "hyun",
-                     Gender.F,
                     "loopers@naver.com",
-                    "2002-10-10"
+                    "2002-10-10",
+                    Gender.F
             );
 
             // act
@@ -67,10 +81,10 @@ public class UserV1ApiE2ETest {
             UserV1Dto.SignUpRequest signUpRequest = new UserV1Dto.SignUpRequest(
                     "loopers",
                     "hyun",
-                    null,
+                    "2002-10-10",
                     "loopers@naver.com",
-                    "2002-10-10"
-            );
+                    null
+                    );
 
             // act
             ParameterizedTypeReference<ApiResponse<UserV1Dto.UserResponse>> responseType = new ParameterizedTypeReference<>() {
@@ -102,6 +116,17 @@ public class UserV1ApiE2ETest {
             headers.set("X-USER-ID", existUserId);
             HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
 
+            UserCommand.SignUp user = new UserCommand.SignUp(
+                    existUserId,
+                    "hyun",
+                    "loopers@nvaer.com",
+                    "2002-10-10",
+                    Gender.F
+            );
+
+            final UserInfo userInfo = userService.signUp(user);
+
+
             // act
             ParameterizedTypeReference<ApiResponse<UserV1Dto.UserResponse>> responseType = new ParameterizedTypeReference<>() {
             };
@@ -112,7 +137,7 @@ public class UserV1ApiE2ETest {
             assertAll(
                     () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK),
                     () -> assertThat(response.getBody()).isNotNull(),
-                    () -> assertThat(response.getBody().data().userId()).isEqualTo(existUserId)
+                    () -> assertThat(response.getBody().data().loginId()).isEqualTo(existUserId)
             );
 
         }
@@ -122,10 +147,20 @@ public class UserV1ApiE2ETest {
         @Test
         void returnsNotFound_whenUserDoesNotExist() {
             // arrange
-            String nonExistentUserId = "loopers_hyun";
+            String nonExistentUserId = "ropers1234";
             HttpHeaders headers = new HttpHeaders();
             headers.set("X-USER-ID", nonExistentUserId);
             HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+
+            UserCommand.SignUp user = new UserCommand.SignUp(
+                    "loopers123",
+                    "hyun",
+                    "loopers@nvaer.com",
+                    "2002-10-10",
+                    Gender.F
+            );
+
+            final UserInfo userInfo = userService.signUp(user);
 
             // act
             ParameterizedTypeReference<ApiResponse<UserV1Dto.UserResponse>> responseType = new ParameterizedTypeReference<>() {

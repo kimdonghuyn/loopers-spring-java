@@ -22,15 +22,14 @@ import static org.mockito.Mockito.verify;
 public class UserServiceIntegrationTest {
     /**
      * 🔗 통합 테스트
-     *
+     * <p>
      * 회원가입
      * - [x]  회원 가입시 User 저장이 수행된다. ( spy 검증 )
      * - [x]  이미 가입된 ID 로 회원가입 시도 시, 실패한다.
-     *
-     *  회원 정보 조회
+     * <p>
+     * 회원 정보 조회
      * - [x]  해당 ID 의 회원이 존재할 경우, 회원 정보가 반환된다.
      * - [x]  해당 ID 의 회원이 존재하지 않을 경우, null 이 반환된다.
-     *
      */
 
 
@@ -52,16 +51,23 @@ public class UserServiceIntegrationTest {
     @Test
     void userIsSavedWhenRegistering() {
         // arrange
-        var userId = "loopers123";
+        var loginId = "loopers123";
         var name = "hyun";
-        Gender gender =Gender.F;
+        Gender gender = Gender.F;
         var email = "loopers@naver.com";
         var birth = "2002-10-10";
 
-        UserEntity user = new UserEntity(userId, name, gender, email, birth);
+        UserCommand.SignUp user = new UserCommand.SignUp(
+                loginId,
+                name,
+                email,
+                birth,
+                gender
+        );
+
 
         // act
-        userService.register(user);
+        userService.signUp(user);
 
         // assert
         verify(userRepository).save(any(UserEntity.class));
@@ -71,23 +77,24 @@ public class UserServiceIntegrationTest {
     @Test
     void registrationFailsWhenIdAlreadyExists() {
         // arrange
-        UserEntity user = new UserEntity(
+        UserCommand.SignUp user = new UserCommand.SignUp(
                 "loopers123",
                 "hyun",
-                Gender.F,
                 "loopers@naver.com",
-                "2002-10-10"
+                "2002-10-10",
+                Gender.F
         );
 
-        userService.register(user);
+        userService.signUp(user);
 
         // act
         final CoreException exception = assertThrows(CoreException.class, () -> {
-            userService.register(user);
+            userService.signUp(user);
         });
 
         // assert
-        assertThat(exception.getErrorType()).isEqualTo(ErrorType.BAD_REQUEST);}
+        assertThat(exception.getErrorType()).isEqualTo(ErrorType.BAD_REQUEST);
+    }
 
 
     @DisplayName("해당 ID 의 회원이 존재할 경우, 회원 정보가 반환된다.")
@@ -95,26 +102,26 @@ public class UserServiceIntegrationTest {
     void returnsUserInfoWhenUserExists() {
         // arrange
         String userId = "loopers123";
-        UserEntity user = new UserEntity(
+        UserCommand.SignUp user = new UserCommand.SignUp(
                 "loopers123",
                 "hyun",
-                Gender.F,
                 "loopers@naver.com",
-                "2002-10-10"
+                "2002-10-10",
+                Gender.F
         );
 
-        userService.register(user);
+        userService.signUp(user);
 
         // act
-        UserEntity response = userService.getUserInfo(userId);
+        UserInfo response = userService.getUserInfo(userId);
 
         // assert
         assertAll(
-                () -> assertThat(response.getUserId()).isEqualTo(user.getUserId()),
-                () -> assertThat(response.getName()).isEqualTo(user.getName()),
-                () -> assertThat(response.getGender()).isEqualTo(user.getGender()),
-                () -> assertThat(response.getEmail()).isEqualTo(user.getEmail()),
-                () -> assertThat(response.getBirth()).isEqualTo(user.getBirth())
+                () -> assertThat(response.loginId().getLoginId()).isEqualTo(userId),
+                () -> assertThat(response.name()).isEqualTo(user.name()),
+                () -> assertThat(response.email().getEmail()).isEqualTo(user.email()),
+                () -> assertThat(response.birth().getBirth()).isEqualTo(user.birth()),
+                () -> assertThat(response.gender()).isEqualTo(user.gender())
         );
     }
 
