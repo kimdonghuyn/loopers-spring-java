@@ -56,7 +56,7 @@ public class UserV1ApiE2ETest {
                     "hyun",
                     "loopers@naver.com",
                     "2002-10-10",
-                    Gender.M
+                    Gender.F
             );
 
             // act

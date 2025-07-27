@@ -58,6 +58,16 @@ public class PointV1ApiE2ETest {
         @Test
         void returnsPoints_whenGetPointsIsSuccessful() {
             // arrange
+            UserCriteria.SignUp userCriteria = new UserCriteria.SignUp(
+                    "loopers123",
+                    "hyun",
+                    "loopers123@naver.com",
+                    "2002-10-10",
+                    Gender.M
+            );
+
+            userFacade.signUp(userCriteria);
+
             String userId = "loopers123";
             HttpHeaders headers = new HttpHeaders();
             headers.set("X-USER-ID", userId);
