@@ -9,7 +9,9 @@ public class UserValidator {
     private static final String PATTERN_BIRTH = "^\\d{4}-\\d{2}-\\d{2}$";
 
     public static void validateUserId(String userId) {
-        if (userId == null || !userId.matches(PATTERN_USER_ID)) {
+        if (userId == null || userId.isEmpty()) {
+            throw new CoreException(ErrorType.NOT_FOUND, "아이디는 필수 입력값입니다.");
+        } else if (!userId.matches(PATTERN_USER_ID)) {
             throw new CoreException(ErrorType.BAD_REQUEST, "아이디는 영문 및 숫자 10자 이내로 입력해야 합니다.");
         }
     }

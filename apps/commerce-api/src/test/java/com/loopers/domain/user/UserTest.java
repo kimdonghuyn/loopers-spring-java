@@ -39,7 +39,7 @@ public class UserTest {
 
         //act
         final CoreException exception = assertThrows(CoreException.class, () -> {
-            new UserEntity(userId, name, gender, email, birth);
+            new LoginId(userId);
         });
 
         //assert
@@ -62,7 +62,7 @@ public class UserTest {
 
         //act
         final CoreException exception = assertThrows(CoreException.class, () -> {
-            new UserEntity(userId, name, gender, email, birth);
+            new Email(email);
         });
 
         //assert
@@ -89,7 +89,7 @@ public class UserTest {
 
         //act
         final CoreException exception = assertThrows(CoreException.class, () -> {
-            new UserEntity(userId, name, gender, email, birth);
+            new Birth(birth);
         });
 
         //assert

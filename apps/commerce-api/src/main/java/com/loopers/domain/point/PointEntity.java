@@ -1,10 +1,9 @@
 package com.loopers.domain.point;
 
+import com.loopers.domain.user.LoginId;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -14,14 +13,23 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PointEntity {
     @Id
-    private String userId;
-    private Long point;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private LoginId loginId;
+    private Long amount;
 
-    public PointEntity(String userId, Long point) {
-        if (point != null && point <= 0) {
+    public PointEntity(LoginId loginId, Long amount) {
+        if (amount != null && amount <= 0) {
             throw new CoreException(ErrorType.BAD_REQUEST, "충전할 포인트는 0보다 커야 합니다.");
         }
-        this.userId = userId;
-        this.point = point;
+        this.loginId = loginId;
+        this.amount = amount;
+    }
+
+    public void charge(Long amount) {
+        if (amount == null || amount <= 0) {
+            throw new CoreException(ErrorType.BAD_REQUEST, "충전할 포인트는 0보다 커야 합니다.");
+        }
+        this.amount += amount;
     }
 }
