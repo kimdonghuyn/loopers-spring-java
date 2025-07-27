@@ -1,8 +1,12 @@
 package com.loopers.interfaces.api.point;
 
+import com.loopers.application.point.PointCriteria;
+import com.loopers.application.point.PointFacade;
+import com.loopers.application.point.PointResult;
 import com.loopers.domain.point.PointEntity;
 import com.loopers.domain.point.PointService;
 import com.loopers.interfaces.api.ApiResponse;
+import com.loopers.interfaces.api.user.UserV1Dto;
 import com.loopers.support.error.CoreException;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,31 +14,33 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/points")
 public class PointV1Controller implements PointV1ApiSpec {
 
+    private final PointFacade pointFacade;
     private final PointService pointService;
 
-    public PointV1Controller(PointService pointService) {
+    public PointV1Controller(PointFacade pointFacade, PointService pointService) {
+        this.pointFacade = pointFacade;
         this.pointService = pointService;
     }
 
     @GetMapping("")
     @Override
-    public ApiResponse<PointV1Dto.PointResponse> getUserPoint(@RequestHeader(value = "X-USER-ID", required = true) String userId) {
-        PointEntity pointInfo = pointService.getUserPoint(userId).get().data();
+    public ApiResponse<PointV1Dto.GetResponse> getUserPoint(@RequestHeader(value = "X-USER-ID", required = true) String loginId) throws CoreException {
 
-        PointV1Dto.PointResponse response = PointV1Dto.PointResponse.from(pointInfo);
+        PointV1Dto.GetResponse response = PointV1Dto.GetResponse.from(
+                pointFacade.get(loginId)
+        );
 
         return ApiResponse.success(response);
     }
 
     @PostMapping("/charge")
     @Override
-    public ApiResponse<PointV1Dto.PointResponse> charge(@RequestHeader(value = "X-USER-ID", required = true) String userId, @RequestBody PointV1Dto.PointRequest chargePointRequest) throws CoreException {
-        PointEntity pointInfo = pointService.charge(userId, chargePointRequest.chargePointAmount()).data();
+    public ApiResponse<PointV1Dto.GetResponse> charge(@RequestHeader(value = "X-USER-ID", required = true) String loginId, @RequestBody Long amount) throws CoreException {
 
-        PointV1Dto.PointResponse response = PointV1Dto.PointResponse.from(pointInfo);
+        PointV1Dto.GetResponse response = PointV1Dto.GetResponse.from(
+                pointFacade.charge(new PointCriteria.Charge(loginId, amount))
+        );
 
         return ApiResponse.success(response);
     }
-
-
 }

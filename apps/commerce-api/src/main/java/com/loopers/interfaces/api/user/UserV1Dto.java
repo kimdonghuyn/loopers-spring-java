@@ -1,9 +1,7 @@
 package com.loopers.interfaces.api.user;
 
-import com.loopers.application.example.user.UserCriteria;
-import com.loopers.application.example.user.UserResult;
-import com.loopers.domain.user.LoginId;
-import com.loopers.domain.user.UserEntity;
+import com.loopers.application.user.UserCriteria;
+import com.loopers.application.user.UserResult;
 import com.loopers.support.Gender;
 import jakarta.validation.constraints.NotNull;
 

@@ -125,15 +125,23 @@ public class UserServiceIntegrationTest {
         );
     }
 
-    @DisplayName("해당 ID 의 회원이 존재하지 않을 경우, 예외가 발생한다.")
+    @DisplayName("해당 ID 의 회원이 존재하지 않을 경우, `404 Not Found` 응답을 반환한다.")
     @Test
     void throwsExceptionWhenUserDoesNotExist() {
         // arrange
-        String userId = "loopers_hyun";
+        UserCommand.SignUp user = new UserCommand.SignUp(
+                "loopers123",
+                "hyun",
+                "loopers@naver.com",
+                "2002-10-10",
+                Gender.F
+        );
+
+        userService.signUp(user);
 
         // act & assert
         CoreException exception = assertThrows(CoreException.class, () -> {
-            userService.getUserInfo(userId);
+            userService.getUserInfo("roopers123");
         });
 
         assertThat(exception.getErrorType()).isEqualTo(ErrorType.NOT_FOUND);

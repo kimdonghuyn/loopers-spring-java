@@ -1,7 +1,12 @@
 package com.loopers.interfaces.api.point;
 
+import com.loopers.application.user.UserCriteria;
+import com.loopers.application.user.UserFacade;
 import com.loopers.interfaces.api.ApiResponse;
 import com.loopers.interfaces.api.user.UserV1Dto;
+import com.loopers.support.Gender;
+import com.loopers.utils.DatabaseCleanUp;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -33,6 +38,16 @@ public class PointV1ApiE2ETest {
     @Autowired
     private TestRestTemplate testRestTemplate;
 
+    @Autowired
+    private UserFacade userFacade;
+
+    @Autowired
+    private DatabaseCleanUp databaseCleanUp;
+
+    @AfterEach
+    void tearDown() {
+        databaseCleanUp.truncateAllTables();
+    }
 
     @DisplayName("GET /api/v1/points")
     @Nested
@@ -49,17 +64,17 @@ public class PointV1ApiE2ETest {
             HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
 
             // act
-            ParameterizedTypeReference<ApiResponse<PointV1Dto.PointResponse>> responseType = new ParameterizedTypeReference<>() {
+            ParameterizedTypeReference<ApiResponse<PointV1Dto.GetResponse>> responseType = new ParameterizedTypeReference<>() {
             };
-            ResponseEntity<ApiResponse<PointV1Dto.PointResponse>> response =
+            ResponseEntity<ApiResponse<PointV1Dto.GetResponse>> response =
                     testRestTemplate.exchange(ENDPOINT, HttpMethod.GET, requestEntity, responseType);
 
             // assert
             assertAll(
                     () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK),
                     () -> assertThat(response.getBody()).isNotNull(),
-                    () -> assertThat(response.getBody().data().userId()).isEqualTo(userId),
-                    () -> assertThat(response.getBody().data().point()).isGreaterThanOrEqualTo(0)
+                    () -> assertThat(response.getBody().data().loginId()).isEqualTo(userId),
+                    () -> assertThat(response.getBody().data().amount()).isGreaterThanOrEqualTo(100)
             );
         }
 
@@ -71,9 +86,9 @@ public class PointV1ApiE2ETest {
             HttpEntity<Void> requestEntity = new HttpEntity<>(new HttpHeaders());
 
             // act
-            ParameterizedTypeReference<ApiResponse<PointV1Dto.PointResponse>> responseType = new ParameterizedTypeReference<>() {
+            ParameterizedTypeReference<ApiResponse<PointV1Dto.GetResponse>> responseType = new ParameterizedTypeReference<>() {
             };
-            ResponseEntity<ApiResponse<PointV1Dto.PointResponse>> response =
+            ResponseEntity<ApiResponse<PointV1Dto.GetResponse>> response =
                     testRestTemplate.exchange(ENDPOINT, HttpMethod.GET, requestEntity, responseType);
 
             // assert
@@ -83,7 +98,7 @@ public class PointV1ApiE2ETest {
         }
     }
 
-    @DisplayName("POST /api/v1/points")
+    @DisplayName("POST /api/v1/points/charge")
     @Nested
     class Charge {
         private static final String ENDPOINT = "/api/v1/points/charge";
@@ -92,34 +107,34 @@ public class PointV1ApiE2ETest {
         @Test
         void returnsChargedPoints_whenChargeIsSuccessful() {
             // arrange
-            Long point = 100L;
-            Long chargeAmount = 1000L;
-            String userId = "loopers123";
-
-            PointV1Dto.PointRequest request = new PointV1Dto.PointRequest(
-                    userId,
-                    chargeAmount
+            UserCriteria.SignUp userCriteria = new UserCriteria.SignUp(
+                    "loopers123",
+                    "hyun",
+                    "loopers123@naver.com",
+                    "2002-10-10",
+                    Gender.M
             );
+
+            userFacade.signUp(userCriteria);
+
+            Long chargeAmount = 1000L;
+
             HttpHeaders headers = new HttpHeaders();
-            headers.set("X-USER-ID", userId);
-            HttpEntity<PointV1Dto.PointRequest> requestEntity = new HttpEntity<>(request, headers);
+            headers.set("X-USER-ID", "loopers123");
+            HttpEntity<Long> requestEntity = new HttpEntity<>(chargeAmount, headers);
 
             // act
-            ParameterizedTypeReference<ApiResponse<PointV1Dto.PointResponse>> responseType = new ParameterizedTypeReference<>() {
+            ParameterizedTypeReference<ApiResponse<PointV1Dto.GetResponse>> responseType = new ParameterizedTypeReference<>() {
             };
-            ResponseEntity<ApiResponse<PointV1Dto.PointResponse>> response =
+            ResponseEntity<ApiResponse<PointV1Dto.GetResponse>> response =
                     testRestTemplate.exchange(ENDPOINT, POST, requestEntity, responseType);
-
-            point += chargeAmount;
-
-            Long totalPoint = point;
 
             // assert
             assertAll(
                     () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK),
                     () -> assertThat(response.getBody()).isNotNull(),
-                    () -> assertThat(response.getBody().data().userId()).isEqualTo(userId),
-                    () -> assertThat(response.getBody().data().point()).isEqualTo(totalPoint)
+                    () -> assertThat(response.getBody().data().loginId()).isEqualTo("loopers123"),
+                    () -> assertThat(response.getBody().data().amount()).isEqualTo(1100L) // 초기 100 + 충전 1000
             );
 
         }
@@ -128,19 +143,24 @@ public class PointV1ApiE2ETest {
         @Test
         void returnsNotFound_whenUserDoesNotExist() {
             // arrange
-            String userId = "loopers_hyun";
-            PointV1Dto.PointRequest request = new PointV1Dto.PointRequest(
-                    userId,
-                    1000L
+            UserCriteria.SignUp userCriteria = new UserCriteria.SignUp(
+                    "loopers123",
+                    "hyun",
+                    "loopers123@naver.com",
+                    "2002-10-10",
+                    Gender.M
             );
+
+            userFacade.signUp(userCriteria);
+
             HttpHeaders headers = new HttpHeaders();
-            headers.set("X-USER-ID", userId);
-            HttpEntity<PointV1Dto.PointRequest> requestEntity = new HttpEntity<>(request, headers);
+            headers.set("X-USER-ID", "roopers123"); // 존재하지 않는 유저 ID
+            HttpEntity<Long> requestEntity = new HttpEntity<>(100L, headers);
 
             // act
-            ParameterizedTypeReference<ApiResponse<PointV1Dto.PointResponse>> responseType = new ParameterizedTypeReference<>() {
+            ParameterizedTypeReference<ApiResponse<PointV1Dto.GetResponse>> responseType = new ParameterizedTypeReference<>() {
             };
-            ResponseEntity<ApiResponse<PointV1Dto.PointResponse>> response =
+            ResponseEntity<ApiResponse<PointV1Dto.GetResponse>> response =
                     testRestTemplate.exchange(ENDPOINT, POST, requestEntity, responseType);
 
             // assert

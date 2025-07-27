@@ -1,11 +1,9 @@
 package com.loopers.domain.user;
 
-import com.loopers.application.example.user.UserResult;
 import com.loopers.infrastructure.user.UserJpaRepository;
-import com.loopers.interfaces.api.user.UserV1Dto;
-import com.loopers.support.Gender;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +13,7 @@ public class UserService {
 
     private final UserJpaRepository userJpaRepository;
 
+    @Transactional
     public UserInfo signUp(UserCommand.SignUp command) {
         UserEntity userEntity = new UserEntity(
                 new LoginId(command.loginId()),

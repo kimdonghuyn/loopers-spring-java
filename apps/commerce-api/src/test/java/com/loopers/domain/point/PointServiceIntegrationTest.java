@@ -1,14 +1,23 @@
-package com.loopers.domain.example.point;
+package com.loopers.domain.point;
 
+import com.loopers.application.user.UserCriteria;
+import com.loopers.application.user.UserFacade;
+import com.loopers.domain.point.PointCommand;
 import com.loopers.domain.point.PointEntity;
+import com.loopers.domain.point.PointInfo;
 import com.loopers.domain.point.PointService;
+import com.loopers.domain.user.UserCommand;
 import com.loopers.domain.user.UserEntity;
+import com.loopers.domain.user.UserInfo;
 import com.loopers.domain.user.UserService;
 import com.loopers.interfaces.api.ApiResponse;
 import com.loopers.interfaces.api.point.PointV1Dto;
+import com.loopers.interfaces.api.user.UserV1Dto;
 import com.loopers.support.Gender;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
+import com.loopers.utils.DatabaseCleanUp;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,32 +43,43 @@ public class PointServiceIntegrationTest {
      */
 
     @Autowired
+    private UserFacade userFacade;
+
+    @Autowired
     private UserService userService;
 
     @Autowired
     private PointService pointService;
 
+    @Autowired
+    private DatabaseCleanUp databaseCleanUp;
+
+    @AfterEach
+    void tearDown() {
+        databaseCleanUp.truncateAllTables();
+    }
+
     @DisplayName("해당 ID 의 회원이 존재할 경우, 보유 포인트가 반환된다.")
     @Test
     void returnsPoints_whenGetPointsIsSuccessful() {
         // arrange
-        UserEntity userEntity = new UserEntity(
+        UserCriteria.SignUp userCriteria = new UserCriteria.SignUp(
                 "loopers123",
                 "hyun",
-                Gender.F,
-                "loopers@naver.com",
-                "2002-10-10"
+                "loopers123@naver.com",
+                "2002-10-10",
+                Gender.M
         );
 
-        userService.register(userEntity);
+        userFacade.signUp(userCriteria);
 
-        // act
-        Optional<ApiResponse<PointEntity>> response = pointService.getUserPoint(userService.getUserInfo(userEntity.getUserId()).getUserId());
+        //act
+        PointInfo pointInfo = pointService.get("loopers123");
 
         //assert
         assertAll(
-                () -> assertThat(response.get().data().getUserId()).isEqualTo(userEntity.getUserId()),
-                () -> assertThat(response.get().data().getPoint()).isEqualTo(100)
+                () -> assertThat(pointInfo.loginId().getLoginId()).isEqualTo("loopers123"),
+                () -> assertThat(pointInfo.amount()).isEqualTo(100)
         );
     }
 
@@ -67,26 +87,39 @@ public class PointServiceIntegrationTest {
     @Test
     void returnsNotFound_whenUserDoesNotExist() {
         // arrange
-        String nonExistentUserId = "loopers_hyun";
+        UserCommand.SignUp user = new UserCommand.SignUp(
+                "loopers123",
+                "hyun",
+                "loopers@naver.com",
+                "2002-10-10",
+                Gender.F
+        );
+        userService.signUp(user);
 
-        // act
-        Optional<ApiResponse<PointEntity>> response = pointService.getUserPoint(nonExistentUserId);
+        //act
+        PointInfo pointInfo = pointService.get("roopers123");
 
         // assert
-        assertThat(response).isNull();
+        assertThat(pointInfo).isNull();
 
     }
 
-    @DisplayName("존재하지 않는 유저 ID 로 충전을 시도한 경우, 실패한다.")
+    @DisplayName("존재하지 않는 유저 ID 로 충전을 시도한 경우, `404 NOT FOUND`를 반환한다.")
     @Test
     void fail_whenChargePointForNonExistentUser() {
         // arrange
-        String nonExistentUserId = "loopers_hyun";
-        long chargeAmount = 100L;
+        UserCommand.SignUp user = new UserCommand.SignUp(
+                "loopers123",
+                "hyun",
+                "loopers@naver.com",
+                "2002-10-10",
+                Gender.F
+        );
+        userService.signUp(user);
 
         // act
         CoreException exception = assertThrows(CoreException.class, () -> {
-            pointService.charge(nonExistentUserId, chargeAmount);
+            pointService.charge(new PointCommand.Charge("roopers123", 100L));
         });
 
         // assert

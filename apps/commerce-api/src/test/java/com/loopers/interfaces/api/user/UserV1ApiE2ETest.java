@@ -52,11 +52,11 @@ public class UserV1ApiE2ETest {
         void returnsUserInfo_whenRegistrationIsSuccessful() {
             // arrange
             UserV1Dto.SignUpRequest signUpRequest = new UserV1Dto.SignUpRequest(
-                    "loopers",
+                    "loopers123",
                     "hyun",
                     "loopers@naver.com",
                     "2002-10-10",
-                    Gender.F
+                    Gender.M
             );
 
             // act

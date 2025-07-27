@@ -1,4 +1,4 @@
-package com.loopers.application.example.user;
+package com.loopers.application.user;
 
 import com.loopers.domain.user.UserCommand;
 import com.loopers.support.Gender;

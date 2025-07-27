@@ -1,5 +1,7 @@
-package com.loopers.application.example.user;
+package com.loopers.application.user;
 
+import com.loopers.domain.point.PointCommand;
+import com.loopers.domain.point.PointService;
 import com.loopers.domain.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -9,12 +11,12 @@ import org.springframework.stereotype.Component;
 public class UserFacade {
 
     private final UserService userService;
-//    private final PointService pointService;
+    private final PointService pointService;
 
     public UserResult signUp(final UserCriteria.SignUp criteria) {
         final UserResult userResult = UserResult.from(userService.signUp(criteria.toCommand()));
 
-//        pointService.create(new PointCommand.Create(userResult.id(), 0L));
+        pointService.initPoint(new PointCommand.Init(criteria.loginId(), 100L));
 
         return userResult;
     }
