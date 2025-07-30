@@ -132,4 +132,45 @@ public class ProductServiceIntegrationTest {
                 () -> assertThat(products.get(2).name()).isEqualTo("피마이너스원 콜라보 에어포스")
         );
     }
+
+    @Test
+    @DisplayName("상품 조회 시 상품이 존재하지 않으면 예외가 발생한다.")
+    void findProductByIdWhenProductDoesNotExist() {
+        // arrange
+        Long nonExistentProductId = 999L;
+
+        // act & assert
+        CoreException exception = assertThrows(CoreException.class, () -> productService.getProduct(nonExistentProductId));
+        assertThat(exception.getErrorType()).isEqualTo(ErrorType.NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("상품 조회 시 상품이 존재하면 상품 정보를 반환한다.")
+    @Transactional
+    void findProductByIdWhenProductExists() {
+        // arrange
+        BrandEntity brand = brandJpaRepository.save(new BrandEntity("아디다스", "아디다스 입니다."));
+        ProductEntity product = new ProductEntity(
+                "운동화",
+                "편한 운동화",
+                30000,
+                5,
+                brand
+        );
+        ProductEntity savedProduct = productRepository.save(product);
+
+        // act
+        ProductInfo productInfo = productService.getProduct(savedProduct.getId());
+
+        // assert
+        assertAll(
+                () -> assertThat(productInfo.name()).isEqualTo("운동화"),
+                () -> assertThat(productInfo.description()).isEqualTo("편한 운동화"),
+                () -> assertThat(productInfo.price()).isEqualTo(30000),
+                () -> assertThat(productInfo.stock()).isEqualTo(5),
+                () -> assertThat(productInfo.brandName()).isEqualTo("아디다스"),
+                () -> assertThat(productInfo.brandDescription()).isEqualTo("아디다스 입니다."),
+                () -> assertThat(productInfo.likeCount()).isEqualTo(0) // 초기 좋아요 수는 0
+        );
+    }
 }
