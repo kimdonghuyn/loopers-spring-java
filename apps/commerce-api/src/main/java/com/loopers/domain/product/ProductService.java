@@ -3,6 +3,8 @@ package com.loopers.domain.product;
 import com.loopers.domain.brand.BrandEntity;
 import com.loopers.infrastructure.brand.BrandJpaRepository;
 import com.loopers.support.SortType;
+import com.loopers.support.error.CoreException;
+import com.loopers.support.error.ErrorType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -32,10 +34,14 @@ public class ProductService {
 
     public List<ProductInfo> getProducts(SortType sortType) {
         List<ProductWithLikeCount> products = productRepository.findAllOrderBySortType(sortType.name());
-        return  products.stream().map(ProductInfo::from).collect(Collectors.toList());
+        return products.stream().map(ProductInfo::from).collect(Collectors.toList());
     }
 
-    public Optional<ProductEntity> getProductById(final Long productId) {
-        return productRepository.findById(productId);
+    public ProductInfo getProduct(final Long productId) {
+        Optional<ProductWithLikeCount> product = Optional.ofNullable(productRepository.findDetailById(productId));
+        if (product.isEmpty()) {
+            throw new CoreException(ErrorType.NOT_FOUND, "해당 상품이 존재하지 않습니다.");
+        }
+        return ProductInfo.from(product.get());
     }
 }

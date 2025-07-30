@@ -29,4 +29,9 @@ public class ProductFacade {
         return products.stream().map(ProductResult::from).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public ProductResult getProduct(Long productId) {
+        ProductInfo product = productService.getProduct(productId);
+        return ProductResult.from(product);
+    }
 }

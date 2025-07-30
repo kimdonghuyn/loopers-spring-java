@@ -3,7 +3,6 @@ package com.loopers.infrastructure.product;
 import com.loopers.domain.product.ProductEntity;
 import com.loopers.domain.product.ProductRepository;
 import com.loopers.domain.product.ProductWithLikeCount;
-import com.loopers.support.SortType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -26,7 +25,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
-    public Optional<ProductEntity> findById(Long id) {
-        return productJpaRepository.findById(id);
+    public ProductWithLikeCount findDetailById(Long id) {
+        return productJpaRepository.findProductById(id);
     }
 }

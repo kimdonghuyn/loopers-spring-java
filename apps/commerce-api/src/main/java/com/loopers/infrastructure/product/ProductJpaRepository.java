@@ -10,8 +10,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ProductJpaRepository extends JpaRepository<ProductEntity, Long> {
-    Optional<ProductEntity> findById(Long id);
-
     @Query("""
                 SELECT new com.loopers.domain.product.ProductWithLikeCount(
                     p,
@@ -27,4 +25,17 @@ public interface ProductJpaRepository extends JpaRepository<ProductEntity, Long>
                     CASE WHEN :sortType = 'LIKES_DESC' THEN COUNT(l.id) END DESC
             """)
     List<ProductWithLikeCount> findAllOrderBySortType(@Param("sortType") String sortType);
+
+    @Query("""
+                SELECT new com.loopers.domain.product.ProductWithLikeCount(
+                    p,
+                    COUNT(l.id)
+                )
+                FROM ProductEntity p
+                JOIN FETCH p.brand b
+                LEFT JOIN LikeEntity l ON l.productId = p.id
+                WHERE p.id = :productId
+                GROUP BY p, b
+            """)
+    ProductWithLikeCount findProductById(@Param("productId") Long productId);
 }
