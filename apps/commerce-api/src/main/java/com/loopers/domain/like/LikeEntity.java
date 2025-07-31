@@ -1,21 +1,24 @@
 package com.loopers.domain.like;
 
+import com.loopers.domain.user.LoginId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.Getter;
 
 @Entity
 @Table(name = "likes")
+@Getter
 public class LikeEntity {
     @Id
     private Long id;
-    private Long userId;
+    private LoginId userId;
     private Long productId;
 
     protected LikeEntity() {
     }
 
-    public LikeEntity(Long userId, Long productId) {
+    public LikeEntity(LoginId userId, Long productId) {
         this.userId = userId;
         this.productId = productId;
     }
