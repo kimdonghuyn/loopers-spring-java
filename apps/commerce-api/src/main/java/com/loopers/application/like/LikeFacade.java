@@ -1,6 +1,7 @@
 package com.loopers.application.like;
 
 import com.loopers.domain.like.LikeCommand;
+import com.loopers.domain.like.LikeEntity;
 import com.loopers.domain.like.LikeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -13,8 +14,8 @@ public class LikeFacade {
     private final LikeService likeService;
 
     @Transactional
-    public void like(LikeCriteria.Like likeCriteria) {
-        likeService.like(likeCriteria.toCommand());
+    public LikeResult like(LikeCriteria.Like likeCriteria) {
+        return LikeResult.from(likeService.like(likeCriteria.toCommand()));
     }
 
     @Transactional

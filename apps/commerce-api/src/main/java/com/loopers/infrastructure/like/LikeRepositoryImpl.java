@@ -11,8 +11,8 @@ public class LikeRepositoryImpl implements LikeRepository {
     private final LikeJpaRepository likeJpaRepository;
 
     @Override
-    public void save(LikeEntity likeEntity) {
-        likeJpaRepository.save(likeEntity);
+    public LikeEntity save(LikeEntity likeEntity) {
+        return likeJpaRepository.save(likeEntity);
     }
 
     @Override

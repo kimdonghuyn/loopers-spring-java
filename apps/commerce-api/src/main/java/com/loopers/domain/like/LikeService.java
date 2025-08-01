@@ -1,5 +1,6 @@
 package com.loopers.domain.like;
 
+import com.loopers.application.like.LikeResult;
 import com.loopers.domain.user.LoginId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -9,8 +10,8 @@ import org.springframework.stereotype.Component;
 public class LikeService {
     private final LikeRepository likeRepository;
 
-    public void like(LikeCommand.Like likeCommand) {
-        likeRepository.save(new LikeEntity(new LoginId(likeCommand.loginId()), likeCommand.productId()));
+    public LikeInfo like(LikeCommand.Like likeCommand) {
+        return LikeInfo.from(likeRepository.save(new LikeEntity(new LoginId(likeCommand.loginId()), likeCommand.productId())));
     }
 
     public void unlike(LikeCommand.Like likeCommand) {
