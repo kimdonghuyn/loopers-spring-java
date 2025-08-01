@@ -1,8 +1,13 @@
 package com.loopers.domain.product;
 
 import com.loopers.domain.brand.BrandEntity;
+import com.loopers.domain.like.LikeCommand;
+import com.loopers.domain.like.LikeService;
+import com.loopers.domain.user.UserCommand;
+import com.loopers.domain.user.UserService;
 import com.loopers.infrastructure.brand.BrandJpaRepository;
 import com.loopers.infrastructure.product.ProductJpaRepository;
+import com.loopers.support.Gender;
 import com.loopers.support.SortType;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
@@ -31,6 +36,12 @@ public class ProductServiceIntegrationTest {
 
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private LikeService likeService;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private BrandJpaRepository brandJpaRepository;
@@ -195,6 +206,52 @@ public class ProductServiceIntegrationTest {
                 () -> assertThat(products.get(1).brandName()).isEqualTo("아디다스"),
                 () -> assertThat(products.get(0).brandDescription()).isEqualTo("아디다스 입니다."),
                 () -> assertThat(products.get(1).brandDescription()).isEqualTo("아디다스 입니다.")
+        );
+    }
+
+    @Test
+    @DisplayName("내가 좋아요한 상품 조회 시 좋아요한 상품 목록을 반환한다.")
+    void findLikedProducts() {
+        // arrange
+        userService.signUp(new UserCommand.SignUp(
+                "loopers123",
+                "hyun",
+                "loopers@naver.com",
+                "1990-01-01",
+                Gender.F
+        ));
+
+        BrandEntity brand = brandJpaRepository.save(new BrandEntity("아디다스", "아디다스 입니다."));
+        ProductEntity product1 = new ProductEntity("운동화1", "설명1", 10000, 10, brand);
+        ProductEntity product2 = new ProductEntity("운동화2", "설명2", 20000, 20, brand);
+        ProductEntity product3 = new ProductEntity("운동화3", "설명3", 30000, 30, brand);
+
+        productRepository.save(product1);
+        productRepository.save(product2);
+
+        // act
+        likeService.like(new LikeCommand.Like(
+                "loopers123",
+                product1.getId()
+        ));
+
+        likeService.like(new LikeCommand.Like(
+                "loopers123",
+                product2.getId()
+        ));
+
+        likeService.unlike(new LikeCommand.Like(
+                "loopers123",
+                product2.getId()
+        ));
+
+        // assert
+        List<ProductInfo> likedProducts = productService.getLikedProducts("loopers123");
+
+        assertAll(
+                () -> assertThat(likedProducts.size()).isEqualTo(1),
+                () -> assertThat(likedProducts.get(0).name()).isEqualTo("운동화1"),
+                () -> assertThat(likedProducts.get(0).likeCount()).isEqualTo(1)
         );
     }
 }
