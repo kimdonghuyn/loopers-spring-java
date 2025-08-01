@@ -3,7 +3,7 @@ package com.loopers.domain.user;
 import com.loopers.support.Gender;
 
 public record UserInfo(
-        Long id,
+        Long userId,
         LoginId loginId,
         String name,
         Email email,

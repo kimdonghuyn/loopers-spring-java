@@ -2,7 +2,8 @@ package com.loopers.application.product;
 
 import com.loopers.domain.product.ProductCommand;
 
-public class ProductCriteria {
+public class
+ProductCriteria {
     public record Create(
             String name,
             String description,
