@@ -1,15 +1,8 @@
 package com.loopers.domain.product;
 
-import com.loopers.application.product.ProductResult;
 import com.loopers.domain.brand.BrandEntity;
-import com.loopers.domain.user.UserCommand;
-import com.loopers.domain.user.UserEntity;
-import com.loopers.domain.user.UserInfo;
-import com.loopers.domain.user.UserService;
 import com.loopers.infrastructure.brand.BrandJpaRepository;
 import com.loopers.infrastructure.product.ProductJpaRepository;
-import com.loopers.infrastructure.user.UserJpaRepository;
-import com.loopers.support.Gender;
 import com.loopers.support.SortType;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
@@ -23,7 +16,6 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -171,6 +163,38 @@ public class ProductServiceIntegrationTest {
                 () -> assertThat(productInfo.brandName()).isEqualTo("아디다스"),
                 () -> assertThat(productInfo.brandDescription()).isEqualTo("아디다스 입니다."),
                 () -> assertThat(productInfo.likeCount()).isEqualTo(0) // 초기 좋아요 수는 0
+        );
+    }
+
+    @Test
+    @DisplayName("여러 상품 ID로 상품을 조회 시 성공하면 상품 정보 리스트를 반환한다.")
+    void findProductsByProductIds() {
+        // arrange
+        BrandEntity brand = brandJpaRepository.save(new BrandEntity("아디다스", "아디다스 입니다."));
+        ProductEntity product1 = new ProductEntity("운동화1", "설명1", 10000, 10, brand);
+        ProductEntity product2 = new ProductEntity("운동화2", "설명2", 20000, 20, brand);
+        ProductEntity product3 = new ProductEntity("운동화3", "설명3", 30000, 30, brand);
+
+        productRepository.save(product1);
+        productRepository.save(product2);
+        productRepository.save(product3);
+
+        // act
+        List<ProductInfo> products = productService.getProductsByProductId(List.of(product1.getId(), product2.getId()));
+
+        // assert
+        assertAll(
+                () -> assertThat(products.size()).isEqualTo(2),
+                () -> assertThat(products.get(0).name()).isEqualTo("운동화1"),
+                () -> assertThat(products.get(1).name()).isEqualTo("운동화2"),
+                () -> assertThat(products.get(0).price()).isEqualTo(10000),
+                () -> assertThat(products.get(1).price()).isEqualTo(20000),
+                () -> assertThat(products.get(0).stock()).isEqualTo(10),
+                () -> assertThat(products.get(1).stock()).isEqualTo(20),
+                () -> assertThat(products.get(0).brandName()).isEqualTo("아디다스"),
+                () -> assertThat(products.get(1).brandName()).isEqualTo("아디다스"),
+                () -> assertThat(products.get(0).brandDescription()).isEqualTo("아디다스 입니다."),
+                () -> assertThat(products.get(1).brandDescription()).isEqualTo("아디다스 입니다.")
         );
     }
 }
