@@ -38,4 +38,9 @@ public class ProductRepositoryImpl implements ProductRepository {
     public Optional<ProductEntity> findById(Long id) {
         return productJpaRepository.findById(id);
     }
+
+    @Override
+    public List<ProductWithLikeCount> findLikedProductsByLoginId(String loginId) {
+        return productJpaRepository.findLikedProductsByLoginId(loginId);
+    }
 }

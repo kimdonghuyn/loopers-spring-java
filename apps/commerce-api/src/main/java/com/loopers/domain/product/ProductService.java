@@ -64,4 +64,9 @@ public class ProductService {
             throw new CoreException(ErrorType.NOT_FOUND, "해당 상품이 존재하지 않습니다.");
         }
     }
+
+    public List<ProductInfo> getLikedProducts(String loginId) {
+        List<ProductWithLikeCount> likedProducts = productRepository.findLikedProductsByLoginId(loginId);
+        return likedProducts.stream().map(ProductInfo::from).collect(Collectors.toList());
+    }
 }

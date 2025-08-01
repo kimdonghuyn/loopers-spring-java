@@ -51,4 +51,17 @@ public interface ProductJpaRepository extends JpaRepository<ProductEntity, Long>
                 GROUP BY p, b
             """)
     List<ProductWithLikeCount> findAllById(List<Long> productIds);
+
+    @Query("""
+                SELECT new com.loopers.domain.product.ProductWithLikeCount(
+                    p,
+                    COUNT(l.id)
+                )
+                FROM ProductEntity p
+                JOIN FETCH p.brand b
+                LEFT JOIN LikeEntity l ON l.productId = p.id
+                WHERE l.userId.loginId = :loginId
+                GROUP BY p, b
+            """)
+    List<ProductWithLikeCount> findLikedProductsByLoginId(@Param("loginId") String loginId);
 }

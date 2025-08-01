@@ -34,4 +34,11 @@ public class ProductFacade {
         ProductInfo product = productService.getProduct(productId);
         return ProductResult.from(product);
     }
+
+    @Transactional(readOnly = true)
+    public List<ProductResult> getLikedProducts(String loginId) {
+        List<ProductInfo> likedProducts = productService.getLikedProducts(loginId);
+        return likedProducts.stream().map(ProductResult::from).collect(Collectors.toList());
+
+    }
 }
