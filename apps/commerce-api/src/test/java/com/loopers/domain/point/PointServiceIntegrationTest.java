@@ -6,10 +6,7 @@ import com.loopers.domain.point.PointCommand;
 import com.loopers.domain.point.PointEntity;
 import com.loopers.domain.point.PointInfo;
 import com.loopers.domain.point.PointService;
-import com.loopers.domain.user.UserCommand;
-import com.loopers.domain.user.UserEntity;
-import com.loopers.domain.user.UserInfo;
-import com.loopers.domain.user.UserService;
+import com.loopers.domain.user.*;
 import com.loopers.interfaces.api.ApiResponse;
 import com.loopers.interfaces.api.point.PointV1Dto;
 import com.loopers.interfaces.api.user.UserV1Dto;
@@ -37,7 +34,7 @@ public class PointServiceIntegrationTest {
      * 포인트 조회
      * - [x]  해당 ID 의 회원이 존재할 경우, 보유 포인트가 반환된다.
      * - [x]  해당 ID 의 회원이 존재하지 않을 경우, null 이 반환된다.
-     *
+     * <p>
      * 포인트 충전
      * - [x] 존재하지 않는 유저 ID 로 충전을 시도한 경우, 실패한다.
      */
@@ -124,5 +121,59 @@ public class PointServiceIntegrationTest {
 
         // assert
         assertThat(exception.getErrorType()).isEqualTo(ErrorType.NOT_FOUND);
+    }
+
+    @DisplayName("포인트 충전 시, 포인트가 정상적으로 증가한다.")
+    @Test
+    void chargePointSuccessfully() {
+        // arrange
+        userService.signUp(
+                new UserCommand.SignUp(
+                        "loopers123",
+                        "hyun",
+                        "loopers@naver.com",
+                        "2002-10-10",
+                        Gender.M
+                ));
+
+        pointService.initPoint(new PointCommand.Init("loopers123", 100L));
+
+        // act
+        pointService.charge(new PointCommand.Charge("loopers123", 100L));
+
+        // assert
+        PointInfo pointInfo = pointService.get("loopers123");
+        assertAll(
+                () -> assertThat(pointInfo).isNotNull(),
+                () -> assertThat(pointInfo.loginId().getLoginId()).isEqualTo("loopers123"),
+                () -> assertThat(pointInfo.amount()).isEqualTo(200L) // 초기 100 + 충전 100
+        );
+    }
+
+    @DisplayName("포인트 사용 시, 포인트가 정상적으로 차감된다.")
+    @Test
+    void usePointSuccessfully() {
+        // arrange
+        userService.signUp(
+                new UserCommand.SignUp(
+                        "loopers123",
+                        "hyun",
+                        "loopers@naver.com",
+                        "2002-10-10",
+                        Gender.M
+                ));
+
+        pointService.initPoint(new PointCommand.Init("loopers123", 100L));
+
+        // act
+        pointService.use(new PointCommand.Use("loopers123", 50L));
+
+        // assert
+        PointInfo pointInfo = pointService.get("loopers123");
+        assertAll(
+                () -> assertThat(pointInfo).isNotNull(),
+                () -> assertThat(pointInfo.loginId().getLoginId()).isEqualTo("loopers123"),
+                () -> assertThat(pointInfo.amount()).isEqualTo(50L) // 초기 100 - 사용 50
+        );
     }
 }

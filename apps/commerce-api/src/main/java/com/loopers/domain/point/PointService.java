@@ -36,4 +36,16 @@ public class PointService {
             throw new CoreException(ErrorType.NOT_FOUND);
         }
     }
+
+    public void use(PointCommand.Use pointCommand) throws CoreException {
+        Optional<PointEntity> point = pointRepository.findByLoginId(new LoginId(pointCommand.loginId()));
+
+        if (point.isPresent()) {
+            PointEntity pointEntity = point.get();
+            pointEntity.use(pointCommand.amount());
+            pointRepository.save(pointEntity);
+        } else {
+            throw new CoreException(ErrorType.NOT_FOUND);
+        }
+    }
 }

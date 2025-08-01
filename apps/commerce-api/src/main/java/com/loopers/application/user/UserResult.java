@@ -13,7 +13,7 @@ public record UserResult(
 ) {
     public static UserResult from(final UserInfo userInfo) {
         return new UserResult(
-                userInfo.id(),
+                userInfo.userId(),
                 userInfo.loginId().getLoginId(),
                 userInfo.name(),
                 userInfo.email().getEmail(),

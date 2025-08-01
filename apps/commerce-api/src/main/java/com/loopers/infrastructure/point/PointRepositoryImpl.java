@@ -16,12 +16,12 @@ public class PointRepositoryImpl implements PointRepository {
     private final PointJpaRepository pointJpaRepository;
 
     @Override
-    public Optional<PointEntity> findByLoginId(LoginId loginId) throws CoreException {
-        return pointJpaRepository.findByLoginId(loginId);
+    public PointEntity save(final PointEntity pointEntity) {
+        return pointJpaRepository.save(pointEntity);
     }
 
     @Override
-    public PointEntity save(final PointEntity pointEntity) {
-        return pointJpaRepository.save(pointEntity);
+    public Optional<PointEntity> findByLoginId(LoginId loginId) throws CoreException {
+        return pointJpaRepository.findByLoginId(loginId);
     }
 }

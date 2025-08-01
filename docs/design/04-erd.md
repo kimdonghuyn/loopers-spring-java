@@ -44,6 +44,7 @@ erDiagram
     BRAND {
         id Long PK
         name varchar
+        description varchar
     }
 
     LIKE {

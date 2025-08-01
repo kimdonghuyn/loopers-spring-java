@@ -11,4 +11,9 @@ public class PointCommand {
             String loginId,
             Long amount
     ) {}
+
+    public record Use(
+            String loginId,
+            Long amount
+    ){}
 }
