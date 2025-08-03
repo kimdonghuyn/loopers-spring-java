@@ -3,7 +3,6 @@ package com.loopers.interfaces.api.point;
 import com.loopers.application.user.UserCriteria;
 import com.loopers.application.user.UserFacade;
 import com.loopers.interfaces.api.ApiResponse;
-import com.loopers.interfaces.api.user.UserV1Dto;
 import com.loopers.support.Gender;
 import com.loopers.utils.DatabaseCleanUp;
 import org.junit.jupiter.api.AfterEach;
@@ -18,7 +17,7 @@ import org.springframework.http.*;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.springframework.http.HttpMethod.*;
+import static org.springframework.http.HttpMethod.POST;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class PointV1ApiE2ETest {

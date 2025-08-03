@@ -4,11 +4,16 @@ import com.loopers.application.order.OrderCriteria;
 import com.loopers.application.order.OrderFacade;
 import com.loopers.application.order.OrderResult;
 import com.loopers.domain.brand.BrandEntity;
-import com.loopers.domain.point.*;
+import com.loopers.domain.point.PointCommand;
+import com.loopers.domain.point.PointRepository;
+import com.loopers.domain.point.PointService;
 import com.loopers.domain.product.ProductCommand;
 import com.loopers.domain.product.ProductRepository;
 import com.loopers.domain.product.ProductService;
-import com.loopers.domain.user.*;
+import com.loopers.domain.user.LoginId;
+import com.loopers.domain.user.UserCommand;
+import com.loopers.domain.user.UserRepository;
+import com.loopers.domain.user.UserService;
 import com.loopers.infrastructure.brand.BrandJpaRepository;
 import com.loopers.infrastructure.product.ProductJpaRepository;
 import com.loopers.support.Gender;
@@ -277,7 +282,7 @@ public class OrderServiceIntegrationTest {
         OrderResult orderResult = orderFacade.order(orderCriteria);
 
         // assert
-        assertThrows(CoreException.class, () -> {
+        assertThrows(IllegalArgumentException.class, () -> {
             orderFacade.order(new OrderCriteria.Order(
                     1L,
                     "loopers123",

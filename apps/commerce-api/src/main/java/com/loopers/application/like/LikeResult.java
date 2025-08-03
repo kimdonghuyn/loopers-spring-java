@@ -4,7 +4,7 @@ import com.loopers.domain.like.LikeInfo;
 
 public record LikeResult(
         Long id,
-        String userId,
+        Long userId,
         Long productId
 ) {
     public static LikeResult from(LikeInfo likeInfo) {

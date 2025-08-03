@@ -2,7 +2,6 @@ package com.loopers.infrastructure.point;
 
 import com.loopers.domain.point.PointEntity;
 import com.loopers.domain.user.LoginId;
-import com.loopers.domain.user.UserEntity;
 import com.loopers.support.error.CoreException;
 import org.springframework.data.jpa.repository.JpaRepository;
 

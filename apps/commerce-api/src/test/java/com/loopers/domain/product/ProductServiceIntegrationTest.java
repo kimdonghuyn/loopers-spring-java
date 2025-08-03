@@ -4,6 +4,7 @@ import com.loopers.domain.brand.BrandEntity;
 import com.loopers.domain.like.LikeCommand;
 import com.loopers.domain.like.LikeService;
 import com.loopers.domain.user.UserCommand;
+import com.loopers.domain.user.UserInfo;
 import com.loopers.domain.user.UserService;
 import com.loopers.infrastructure.brand.BrandJpaRepository;
 import com.loopers.infrastructure.product.ProductJpaRepository;
@@ -186,12 +187,12 @@ public class ProductServiceIntegrationTest {
         ProductEntity product2 = new ProductEntity("운동화2", "설명2", 20000, 20, brand);
         ProductEntity product3 = new ProductEntity("운동화3", "설명3", 30000, 30, brand);
 
-        productRepository.save(product1);
-        productRepository.save(product2);
-        productRepository.save(product3);
+        ProductEntity savedProduct1 = productRepository.save(product1);
+        ProductEntity savedProduct2 = productRepository.save(product2);
+        ProductEntity savedProduct3 = productRepository.save(product3);
 
         // act
-        List<ProductInfo> products = productService.getProductsByProductId(List.of(product1.getId(), product2.getId()));
+        List<ProductInfo> products = productService.getProductsByProductId(List.of(savedProduct1.getId(), savedProduct2.getId()));
 
         // assert
         assertAll(
@@ -213,7 +214,7 @@ public class ProductServiceIntegrationTest {
     @DisplayName("내가 좋아요한 상품 조회 시 좋아요한 상품 목록을 반환한다.")
     void findLikedProducts() {
         // arrange
-        userService.signUp(new UserCommand.SignUp(
+        UserInfo user = userService.signUp(new UserCommand.SignUp(
                 "loopers123",
                 "hyun",
                 "loopers@naver.com",
@@ -226,27 +227,28 @@ public class ProductServiceIntegrationTest {
         ProductEntity product2 = new ProductEntity("운동화2", "설명2", 20000, 20, brand);
         ProductEntity product3 = new ProductEntity("운동화3", "설명3", 30000, 30, brand);
 
-        productRepository.save(product1);
-        productRepository.save(product2);
+        ProductEntity savedProduct1 = productRepository.save(product1);
+        ProductEntity savedProduct2 = productRepository.save(product2);
+        ProductEntity savedProduct3 = productRepository.save(product3);
 
         // act
         likeService.like(new LikeCommand.Like(
-                "loopers123",
-                product1.getId()
+                user.userId(),
+                savedProduct1.getId()
         ));
 
         likeService.like(new LikeCommand.Like(
-                "loopers123",
-                product2.getId()
+                user.userId(),
+                savedProduct2.getId()
         ));
 
         likeService.unlike(new LikeCommand.Like(
-                "loopers123",
-                product2.getId()
+                user.userId(),
+                savedProduct2.getId()
         ));
 
         // assert
-        List<ProductInfo> likedProducts = productService.getLikedProducts("loopers123");
+        List<ProductInfo> likedProducts = productService.getLikedProducts(user.userId());
 
         assertAll(
                 () -> assertThat(likedProducts.size()).isEqualTo(1),

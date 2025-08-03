@@ -1,8 +1,6 @@
 package com.loopers.application.product;
 
 import com.loopers.domain.product.ProductInfo;
-import com.loopers.domain.user.UserInfo;
-import com.loopers.support.Gender;
 
 public record ProductResult(
         Long id,

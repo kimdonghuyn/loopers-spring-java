@@ -1,21 +1,17 @@
 package com.loopers.domain.order;
 
+import com.loopers.domain.BaseEntity;
 import com.loopers.support.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Getter
 @Table(name = "orders")
-public class OrderEntity {
-    @Id
-    @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
-    private Long id;
-
+public class OrderEntity extends BaseEntity {
     @Column(name = "ref_user_id", nullable = false)
     private Long userId;
 
@@ -28,6 +24,18 @@ public class OrderEntity {
     public OrderEntity() {}
 
     public OrderEntity(Long userId, List<OrderItemEntity> orderItems, OrderStatus status) {
+        if(userId == null) {
+            throw new IllegalArgumentException("userId는 null일 수 없습니다.");
+        }
+
+        if(orderItems == null || orderItems.isEmpty()) {
+            throw new IllegalArgumentException("주문 항목은 null이거나 비어있을 수 없습니다.");
+        }
+
+        if(status == null) {
+            throw new IllegalArgumentException("주문 상태는 null일 수 없습니다.");
+        }
+
         this.userId = userId;
         this.orderItems = orderItems;
         this.status = status;

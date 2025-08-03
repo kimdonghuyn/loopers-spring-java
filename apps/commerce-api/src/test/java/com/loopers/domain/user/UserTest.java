@@ -8,7 +8,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class UserTest {
     /**
@@ -22,8 +22,6 @@ public class UserTest {
     @DisplayName("ID 가 `영문 및 숫자 10자 이내` 형식에 맞지 않으면, User 객체 생성에 실패한다.")
     @ParameterizedTest
     @ValueSource(strings = {
-            "loopers123",
-            "1",
             "",
             "동현",
             "동현동현동현동현동현동현동현",
@@ -49,7 +47,6 @@ public class UserTest {
     @DisplayName("이메일이 `xx@yy.zz` 형식에 맞지 않으면, User 객체 생성에 실패한다.")
     @ParameterizedTest
     @ValueSource(strings = {
-            "loopers123@naver.com",
             "",
             "loppers123@naver",
     })
@@ -72,7 +69,6 @@ public class UserTest {
     @DisplayName("생년월일이 `yyyy-MM-dd` 형식에 맞지 않으면, User 객체 생성에 실패한다.")
     @ParameterizedTest
     @ValueSource(strings = {
-            "2020-01-02",
             "",
             "20-01-02",
             "2020-1-02",

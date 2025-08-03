@@ -14,5 +14,5 @@ public interface ProductRepository {
 
     Optional<ProductEntity> findById(Long id);
 
-    List<ProductWithLikeCount> findLikedProductsByLoginId(String loginId);
+    List<ProductWithLikeCount> findLikedProductsByUserId(Long userId);
 }

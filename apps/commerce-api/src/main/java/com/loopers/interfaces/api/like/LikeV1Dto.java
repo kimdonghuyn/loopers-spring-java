@@ -2,8 +2,6 @@ package com.loopers.interfaces.api.like;
 
 import com.loopers.application.like.LikeCriteria;
 import com.loopers.application.like.LikeResult;
-import com.loopers.application.point.PointCriteria;
-import com.loopers.interfaces.api.point.PointV1Dto;
 import jakarta.validation.constraints.NotNull;
 
 public class LikeV1Dto {
@@ -22,7 +20,7 @@ public class LikeV1Dto {
             @NotNull
             Long id,
             @NotNull
-            String userId,
+            Long userId,
             @NotNull
             Long productId
     ) {

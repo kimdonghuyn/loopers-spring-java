@@ -2,11 +2,8 @@ package com.loopers.interfaces.api.point;
 
 import com.loopers.application.point.PointCriteria;
 import com.loopers.application.point.PointFacade;
-import com.loopers.application.point.PointResult;
-import com.loopers.domain.point.PointEntity;
 import com.loopers.domain.point.PointService;
 import com.loopers.interfaces.api.ApiResponse;
-import com.loopers.interfaces.api.user.UserV1Dto;
 import com.loopers.support.error.CoreException;
 import org.springframework.web.bind.annotation.*;
 

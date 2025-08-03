@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface ProductJpaRepository extends JpaRepository<ProductEntity, Long> {
     @Query("""
@@ -59,9 +58,8 @@ public interface ProductJpaRepository extends JpaRepository<ProductEntity, Long>
                 )
                 FROM ProductEntity p
                 JOIN FETCH p.brand b
-                LEFT JOIN LikeEntity l ON l.productId = p.id
-                WHERE l.userId.loginId = :loginId
+                JOIN LikeEntity l ON l.productId = p.id AND l.userId = :userId
                 GROUP BY p, b
             """)
-    List<ProductWithLikeCount> findLikedProductsByLoginId(@Param("loginId") String loginId);
+    List<ProductWithLikeCount> findLikedProductsByUserId(@Param("userId") Long userId);
 }

@@ -1,5 +1,6 @@
 package com.loopers.domain.user;
 
+import com.loopers.domain.BaseEntity;
 import com.loopers.support.Gender;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -9,10 +10,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "member")
 @Getter
 @NoArgsConstructor
-public class UserEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class UserEntity extends BaseEntity {
     @Embedded
     private LoginId loginId;
     private String name;
@@ -21,6 +19,12 @@ public class UserEntity {
     private Gender gender;
 
     public UserEntity(LoginId loginId, String name,Email email, Birth birth, Gender gender) {
+        UserValidator.validateUserId(loginId.getLoginId());
+        UserValidator.validateName(name);
+        UserValidator.validateEmail(email.getEmail());
+        UserValidator.validateBirth(birth.getBirth());
+        UserValidator.validateGender(gender);
+
         this.loginId = loginId;
         this.name = name;
         this.email = email;

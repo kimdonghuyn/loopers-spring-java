@@ -3,7 +3,6 @@ package com.loopers.application.product;
 import com.loopers.domain.product.ProductEntity;
 import com.loopers.domain.product.ProductInfo;
 import com.loopers.domain.product.ProductService;
-import com.loopers.domain.user.UserService;
 import com.loopers.support.SortType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -36,8 +35,8 @@ public class ProductFacade {
     }
 
     @Transactional(readOnly = true)
-    public List<ProductResult> getLikedProducts(String loginId) {
-        List<ProductInfo> likedProducts = productService.getLikedProducts(loginId);
+    public List<ProductResult> getLikedProducts(Long userId) {
+        List<ProductInfo> likedProducts = productService.getLikedProducts(userId);
         return likedProducts.stream().map(ProductResult::from).collect(Collectors.toList());
 
     }

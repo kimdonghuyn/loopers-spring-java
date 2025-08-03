@@ -1,5 +1,6 @@
 package com.loopers.domain.product;
 
+import com.loopers.domain.BaseEntity;
 import com.loopers.domain.brand.BrandEntity;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
@@ -7,17 +8,11 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import static jakarta.persistence.GenerationType.*;
-
 @Entity
 @Table(name = "product")
 @Getter
 @NoArgsConstructor
-public class ProductEntity {
-
-    @Id
-    @GeneratedValue(strategy = IDENTITY)
-    private Long id;
+public class ProductEntity extends BaseEntity {
     private String name;
     private String description;
     private int price;
@@ -34,6 +29,22 @@ public class ProductEntity {
             final int stock,
             final BrandEntity brand
     ) {
+        if (name == null) {
+            throw new IllegalArgumentException("상품 이름은 null일 수 없습니다.");
+        }
+        if (description == null) {
+            throw new IllegalArgumentException("상품 설명은 null일 수 없습니다.");
+        }
+        if (price <= 0) {
+            throw new IllegalArgumentException("상품 가격은 0 이하일 수 없습니다.");
+        }
+        if (stock < 0) {
+            throw new IllegalArgumentException("상품 재고는 음수일 수 없습니다.");
+        }
+        if (brand == null) {
+            throw new IllegalArgumentException("브랜드는 null일 수 없습니다.");
+        }
+
         this.name = name;
         this.description = description;
         this.price = price;

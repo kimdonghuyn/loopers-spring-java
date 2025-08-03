@@ -7,7 +7,6 @@ import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -65,8 +64,8 @@ public class ProductService {
         }
     }
 
-    public List<ProductInfo> getLikedProducts(String loginId) {
-        List<ProductWithLikeCount> likedProducts = productRepository.findLikedProductsByLoginId(loginId);
+    public List<ProductInfo> getLikedProducts(Long userId) {
+        List<ProductWithLikeCount> likedProducts = productRepository.findLikedProductsByUserId(userId);
         return likedProducts.stream().map(ProductInfo::from).collect(Collectors.toList());
     }
 }
