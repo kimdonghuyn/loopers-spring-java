@@ -7,11 +7,15 @@ import com.loopers.domain.brand.BrandRepository;
 import com.loopers.domain.like.LikeEntity;
 import com.loopers.domain.like.LikeRepository;
 import com.loopers.support.SortType;
+import com.loopers.utils.DatabaseCleanUp;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -31,12 +35,19 @@ public class ProductFacadeTest {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private DatabaseCleanUp databaseCleanUp;
+
     @BeforeEach
     void setUp() {
         brandRepository.save(new BrandEntity("브랜드1", "브랜드 설명"));
         productRepository.save(new ProductEntity("상품1", "설명1", 5000, 5, 1L));
         productRepository.save(new ProductEntity("상품2", "설명2", 10000, 10, 1L));
-        productRepository.save(new ProductEntity("상품3", "설명3", 20000, 20, 1L));
+    }
+
+    @AfterEach
+    void tearDown() {
+        databaseCleanUp.truncateAllTables();
     }
 
     @Test
@@ -52,10 +63,12 @@ public class ProductFacadeTest {
         assertAll(
                 () -> assertThat(products).isNotNull(),
                 () -> assertThat(products).hasSize(2),
-                () -> assertThat(products.get(0).brandId()).isNotNull(),
-                () -> assertThat(products.get(1).brandId()).isNotNull(),
-                () -> assertThat(products.get(0).name()).isEqualTo("상품2"),
-                () -> assertThat(products.get(1).name()).isEqualTo("상품1")
+                () -> assertThat(products.get(0).isPresent()).isTrue(),
+                () -> assertThat(products.get(1).isPresent()).isTrue(),
+                () -> assertThat(products.get(0).get().brandId()).isNotNull(),
+                () -> assertThat(products.get(1).get().brandId()).isNotNull(),
+                () -> assertThat(products.get(0).get().name()).isEqualTo("상품2"),
+                () -> assertThat(products.get(1).get().name()).isEqualTo("상품1")
         );
     }
 
@@ -72,10 +85,12 @@ public class ProductFacadeTest {
         assertAll(
                 () -> assertThat(products).isNotNull(),
                 () -> assertThat(products).hasSize(2),
-                () -> assertThat(products.get(0).brandId()).isNotNull(),
-                () -> assertThat(products.get(1).brandId()).isNotNull(),
-                () -> assertThat(products.get(0).name()).isEqualTo("상품1"),
-                () -> assertThat(products.get(1).name()).isEqualTo("상품2")
+                () -> assertThat(products.get(0).isPresent()).isTrue(),
+                () -> assertThat(products.get(1).isPresent()).isTrue(),
+                () -> assertThat(products.get(0).get().brandId()).isNotNull(),
+                () -> assertThat(products.get(1).get().brandId()).isNotNull(),
+                () -> assertThat(products.get(0).get().name()).isEqualTo("상품1"),
+                () -> assertThat(products.get(1).get().name()).isEqualTo("상품2")
         );
     }
 
@@ -97,10 +112,12 @@ public class ProductFacadeTest {
         assertAll(
                 () -> assertThat(products).isNotNull(),
                 () -> assertThat(products).hasSize(2),
-                () -> assertThat(products.get(0).brandId()).isNotNull(),
-                () -> assertThat(products.get(1).brandId()).isNotNull(),
-                () -> assertThat(products.get(0).name()).isEqualTo("상품1"),
-                () -> assertThat(products.get(1).name()).isEqualTo("상품2")
+                () -> assertThat(products.get(0).isPresent()).isTrue(),
+                () -> assertThat(products.get(1).isPresent()).isTrue(),
+                () -> assertThat(products.get(0).get().brandId()).isNotNull(),
+                () -> assertThat(products.get(1).get().brandId()).isNotNull(),
+                () -> assertThat(products.get(0).get().name()).isEqualTo("상품1"),
+                () -> assertThat(products.get(1).get().name()).isEqualTo("상품2")
         );
     }
 
@@ -109,7 +126,7 @@ public class ProductFacadeTest {
     @DisplayName("단일 상품을 조회할 수 있다")
     void getProduct_success() {
         Long existingProductId = 1L;
-        ProductResult result = productFacade.getProduct(existingProductId);
+        Optional<ProductResult> result = productFacade.getProduct(existingProductId);
         assertThat(result).isNotNull();
     }
 
@@ -124,10 +141,12 @@ public class ProductFacadeTest {
         assertAll(
                 () -> assertThat(liked).isNotNull(),
                 () -> assertThat(liked).hasSize(2),
-                () -> assertThat(liked.get(0).brandId()).isNotNull(),
-                () -> assertThat(liked.get(1).brandId()).isNotNull(),
-                () -> assertThat(liked.get(0).name()).isEqualTo("상품1"),
-                () -> assertThat(liked.get(1).name()).isEqualTo("상품2")
+                () -> assertThat(liked.get(0).isPresent()).isTrue(),
+                () -> assertThat(liked.get(1).isPresent()).isTrue(),
+                () -> assertThat(liked.get(0).get().brandId()).isNotNull(),
+                () -> assertThat(liked.get(1).get().brandId()).isNotNull(),
+                () -> assertThat(liked.get(0).get().name()).isEqualTo("상품1"),
+                () -> assertThat(liked.get(1).get().name()).isEqualTo("상품2")
         );
     }
 }

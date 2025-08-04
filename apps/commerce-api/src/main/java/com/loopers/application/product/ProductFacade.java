@@ -27,26 +27,25 @@ public class ProductFacade {
     }
 
     @Transactional(readOnly = true)
-    public List<ProductResult> getProducts(SortType sortType) {
+    public List<Optional<ProductResult>> getProducts(SortType sortType) {
         List<ProductInfo> products = productService.getProducts(sortType);
 
         Map<Long, Optional<BrandInfo>> brandMap = getBrandMap(products);
 
-        List<ProductResult> productResult = mergeProductAndBrand(products, brandMap);
+        List<Optional<ProductResult>> productResult = mergeProductAndBrand(products, brandMap);
 
         return productResult;
     }
 
     @Transactional(readOnly = true)
-    public ProductResult getProduct(Long productId) {
+    public Optional<ProductResult> getProduct(Long productId) {
         ProductInfo product = productService.getProduct(productId);
         Optional<BrandInfo> brandInfo = brandService.getBrandInfo(product.brandId());
-        return brandInfo.map(info -> ProductResult.from(product, info))
-                        .orElseThrow(() -> new IllegalStateException("BrandInfo not found for productId: " + productId));
+        return brandInfo.map(info -> ProductResult.from(product, info));
     }
 
     @Transactional(readOnly = true)
-    public List<ProductResult> getLikedProducts(Long userId) {
+    public List<Optional<ProductResult>> getLikedProducts(Long userId) {
         List<ProductInfo> likedProducts = productService.getLikedProducts(userId);
         Map<Long, Optional<BrandInfo>> brandMap = getBrandMap(likedProducts);
         return mergeProductAndBrand(likedProducts, brandMap);
@@ -63,11 +62,11 @@ public class ProductFacade {
         return brandMap;
     }
 
-    private List<ProductResult> mergeProductAndBrand(List<ProductInfo> products, Map<Long, Optional<BrandInfo>> brandMap) {
+    private List<Optional<ProductResult>> mergeProductAndBrand(List<ProductInfo> products, Map<Long, Optional<BrandInfo>> brandMap) {
         return products.stream()
                 .map(product -> {
                     Optional<BrandInfo> brandInfo = brandMap.get(product.brandId());
-                    return brandInfo.map(info -> ProductResult.from(product, info)).orElse(null);
+                    return brandInfo.map(info -> ProductResult.from(product, info));
                 })
                 .collect(Collectors.toList());
     }
