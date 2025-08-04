@@ -6,7 +6,7 @@ public class PaymentEntity extends BaseEntity {
     private Long userId;
     private int totalPrice;
 
-    public PaymentEntity(Long userId, int totalPrice) {
+    public PaymentEntity(final Long userId, final int totalPrice) {
         if (userId == null) {
             throw new IllegalArgumentException("userId는 null일 수 없습니다.");
         }

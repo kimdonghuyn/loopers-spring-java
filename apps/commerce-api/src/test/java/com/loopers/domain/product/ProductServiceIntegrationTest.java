@@ -69,7 +69,7 @@ public class ProductServiceIntegrationTest {
                 "그냥 운동할 때 입는 거임",
                 10000,
                 10,
-                1L
+                brand.getId()
         );
 
         // act
@@ -103,14 +103,14 @@ public class ProductServiceIntegrationTest {
                 "그냥 운동할 때 입는 거임",
                 1000,
                 10,
-                brand
+                brand.getId()
         );
         var product2 = new ProductEntity(
                 "피마이너스원 콜라보 에어포스",
                 "제일 비싼 지디 콜라보 한정판 신발임",
                 5000,
                 20,
-                brand
+                brand.getId()
         );
 
         var product3 = new ProductEntity(
@@ -118,7 +118,7 @@ public class ProductServiceIntegrationTest {
                 "적당히 비싼 축구화임",
                 4000,
                 20,
-                brand
+                brand.getId()
         );
 
         productRepository.save(product1);
@@ -159,7 +159,7 @@ public class ProductServiceIntegrationTest {
                 "편한 운동화",
                 30000,
                 5,
-                brand
+                brand.getId()
         );
         ProductEntity savedProduct = productRepository.save(product);
 
@@ -172,8 +172,6 @@ public class ProductServiceIntegrationTest {
                 () -> assertThat(productInfo.description()).isEqualTo("편한 운동화"),
                 () -> assertThat(productInfo.price()).isEqualTo(30000),
                 () -> assertThat(productInfo.stock()).isEqualTo(5),
-                () -> assertThat(productInfo.brandName()).isEqualTo("아디다스"),
-                () -> assertThat(productInfo.brandDescription()).isEqualTo("아디다스 입니다."),
                 () -> assertThat(productInfo.likeCount()).isEqualTo(0) // 초기 좋아요 수는 0
         );
     }
@@ -183,9 +181,9 @@ public class ProductServiceIntegrationTest {
     void findProductsByProductIds() {
         // arrange
         BrandEntity brand = brandJpaRepository.save(new BrandEntity("아디다스", "아디다스 입니다."));
-        ProductEntity product1 = new ProductEntity("운동화1", "설명1", 10000, 10, brand);
-        ProductEntity product2 = new ProductEntity("운동화2", "설명2", 20000, 20, brand);
-        ProductEntity product3 = new ProductEntity("운동화3", "설명3", 30000, 30, brand);
+        ProductEntity product1 = new ProductEntity("운동화1", "설명1", 10000, 10, brand.getId());
+        ProductEntity product2 = new ProductEntity("운동화2", "설명2", 20000, 20, brand.getId());
+        ProductEntity product3 = new ProductEntity("운동화3", "설명3", 30000, 30, brand.getId());
 
         ProductEntity savedProduct1 = productRepository.save(product1);
         ProductEntity savedProduct2 = productRepository.save(product2);
@@ -202,11 +200,7 @@ public class ProductServiceIntegrationTest {
                 () -> assertThat(products.get(0).price()).isEqualTo(10000),
                 () -> assertThat(products.get(1).price()).isEqualTo(20000),
                 () -> assertThat(products.get(0).stock()).isEqualTo(10),
-                () -> assertThat(products.get(1).stock()).isEqualTo(20),
-                () -> assertThat(products.get(0).brandName()).isEqualTo("아디다스"),
-                () -> assertThat(products.get(1).brandName()).isEqualTo("아디다스"),
-                () -> assertThat(products.get(0).brandDescription()).isEqualTo("아디다스 입니다."),
-                () -> assertThat(products.get(1).brandDescription()).isEqualTo("아디다스 입니다.")
+                () -> assertThat(products.get(1).stock()).isEqualTo(20)
         );
     }
 
@@ -223,9 +217,9 @@ public class ProductServiceIntegrationTest {
         ));
 
         BrandEntity brand = brandJpaRepository.save(new BrandEntity("아디다스", "아디다스 입니다."));
-        ProductEntity product1 = new ProductEntity("운동화1", "설명1", 10000, 10, brand);
-        ProductEntity product2 = new ProductEntity("운동화2", "설명2", 20000, 20, brand);
-        ProductEntity product3 = new ProductEntity("운동화3", "설명3", 30000, 30, brand);
+        ProductEntity product1 = new ProductEntity("운동화1", "설명1", 10000, 10, brand.getId());
+        ProductEntity product2 = new ProductEntity("운동화2", "설명2", 20000, 20, brand.getId());
+        ProductEntity product3 = new ProductEntity("운동화3", "설명3", 30000, 30, brand.getId());
 
         ProductEntity savedProduct1 = productRepository.save(product1);
         ProductEntity savedProduct2 = productRepository.save(product2);

@@ -10,12 +10,12 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "point")
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public class PointEntity extends BaseEntity {
     private LoginId loginId;
     private Long amount;
 
-    public PointEntity(LoginId loginId, Long amount) {
+    public PointEntity(final LoginId loginId, final Long amount) {
         if (loginId == null) {
             throw new IllegalArgumentException("로그인 ID는 null일 수 없습니다.");
         }

@@ -15,9 +15,8 @@ public interface ProductJpaRepository extends JpaRepository<ProductEntity, Long>
                     COUNT(l.id)
                 )
                 FROM ProductEntity p
-                JOIN FETCH p.brand b
                 LEFT JOIN LikeEntity l ON l.productId = p.id
-                GROUP BY p, b
+                GROUP BY p
                 ORDER BY
                     CASE WHEN :sortType = 'LATEST' THEN p.id END DESC,
                     CASE WHEN :sortType = 'PRICE_ASC' THEN p.price END ASC,
@@ -31,10 +30,9 @@ public interface ProductJpaRepository extends JpaRepository<ProductEntity, Long>
                     COUNT(l.id)
                 )
                 FROM ProductEntity p
-                JOIN FETCH p.brand b
                 LEFT JOIN LikeEntity l ON l.productId = p.id
                 WHERE p.id = :productId
-                GROUP BY p, b
+                GROUP BY p
             """)
     ProductWithLikeCount findProductById(@Param("productId") Long productId);
 
@@ -44,10 +42,9 @@ public interface ProductJpaRepository extends JpaRepository<ProductEntity, Long>
                     COUNT(l.id)
                 )
                 FROM ProductEntity p
-                JOIN FETCH p.brand b
                 LEFT JOIN LikeEntity l ON l.productId = p.id
                 WHERE p.id IN :productIds
-                GROUP BY p, b
+                GROUP BY p
             """)
     List<ProductWithLikeCount> findAllById(List<Long> productIds);
 
@@ -57,9 +54,8 @@ public interface ProductJpaRepository extends JpaRepository<ProductEntity, Long>
                     COUNT(l.id)
                 )
                 FROM ProductEntity p
-                JOIN FETCH p.brand b
                 JOIN LikeEntity l ON l.productId = p.id AND l.userId = :userId
-                GROUP BY p, b
+                GROUP BY p
             """)
     List<ProductWithLikeCount> findLikedProductsByUserId(@Param("userId") Long userId);
 }

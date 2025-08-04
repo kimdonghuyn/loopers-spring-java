@@ -3,11 +3,13 @@ package com.loopers.domain.order;
 import com.loopers.domain.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 
 @Getter
 @Entity
 @Table(name = "order_item")
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public class OrderItemEntity extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ref_order_id")
@@ -20,8 +22,6 @@ public class OrderItemEntity extends BaseEntity {
     private Quantity quantity;
 
     private int price;
-
-    public OrderItemEntity() {}
 
     public OrderItemEntity(Long productId, Quantity quantity, int price) {
         if (productId == null) {

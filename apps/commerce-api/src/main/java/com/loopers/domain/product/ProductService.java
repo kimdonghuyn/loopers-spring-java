@@ -26,7 +26,7 @@ public class ProductService {
                 command.description(),
                 command.price(),
                 command.stock(),
-                brand.get()
+                command.brandId()
         );
 
         return productRepository.save(product);

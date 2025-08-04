@@ -4,6 +4,7 @@ import com.loopers.domain.BaseEntity;
 import com.loopers.support.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.List;
 @Entity
 @Getter
 @Table(name = "orders")
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public class OrderEntity extends BaseEntity {
     @Column(name = "ref_user_id", nullable = false)
     private Long userId;
@@ -20,8 +22,6 @@ public class OrderEntity extends BaseEntity {
 
     @OneToMany(mappedBy = "order" , cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItemEntity> orderItems = new ArrayList<>();
-
-    public OrderEntity() {}
 
     public OrderEntity(Long userId, List<OrderItemEntity> orderItems, OrderStatus status) {
         if(userId == null) {

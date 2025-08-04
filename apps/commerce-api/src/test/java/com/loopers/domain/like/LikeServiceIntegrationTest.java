@@ -60,7 +60,7 @@ public class LikeServiceIntegrationTest {
                         "운동할 때 신는 운동화임",
                         10000,
                         10,
-                        savedBrand
+                        savedBrand.getId()
                 )
         );
     }
