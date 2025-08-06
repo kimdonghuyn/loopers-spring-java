@@ -2,7 +2,12 @@ package com.loopers.domain.coupon;
 
 import com.loopers.support.enums.CouponStatus;
 import com.loopers.support.enums.DiscountPolicy;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.time.LocalDateTime;
 
@@ -77,6 +82,18 @@ public class CouponTest {
             });
         }
 
+        @DisplayName("정액 할인인 경우, 할인 금액이 0 미만이면 IllegalArgumentException 예외가 발생한다.")
+        @Test
+        void returnIllegalArgumentException_whenDiscountAmountIsNegative() {
+            // arrange
+            discountAmount = -100;
+
+            // act & assert
+            assertThrows(IllegalArgumentException.class, () -> {
+                Coupon.create(name, discountPolicy, discountAmount, discountRate, issuedAt, expiredAt, quantity);
+            });
+        }
+
         @DisplayName("할인 비율이 null이면 IllegalArgumentException 예외가 발생한다.")
         @Test
         void returnIllegalArgumentException_whenDiscountRateIsNull() {
@@ -89,6 +106,72 @@ public class CouponTest {
             assertThrows(IllegalArgumentException.class, () -> {
                 Coupon.create(name, discountPolicy, discountAmount, discountRate, issuedAt, expiredAt, quantity);
             });
+        }
+
+        @DisplayName("할인 비율이 0 미만이거나 1초과면 IllegalArgumentException 예외가 발생한다.")
+        @ParameterizedTest
+        @ValueSource(doubles = {-0.1, 1.1})
+        void returnIllegalArgumentException_whenDiscountRateIsOutOfRange() {
+            // arrange
+            discountPolicy = DiscountPolicy.RATE;
+
+            // act & assert
+            assertThrows(IllegalArgumentException.class, () -> {
+                Coupon.create(name, discountPolicy, discountAmount, discountRate, issuedAt, expiredAt, quantity);
+            });
+        }
+
+        @DisplayName("시작 시간이 종료 시간 이후면 IllegalArgumentException 예외가 발생한다.")
+        @Test
+        void returnIllegalArgumentException_whenIssuedAtIsAfterExpiredAt() {
+            // arrange
+            issuedAt = now.plusDays(2);
+            expiredAt = now.plusDays(1);
+
+            // act & assert
+            assertThrows(IllegalArgumentException.class, () -> {
+                Coupon.create(name, discountPolicy, discountAmount, discountRate, issuedAt, expiredAt, quantity);
+            });
+        }
+
+        @DisplayName("종료 시간이 현재 시간 이전이면 IllegalArgumentException 예외가 발생한다.")
+        @Test
+        void returnIllegalArgumentException_whenExpiredAtIsBeforeNow() {
+            // arrange
+            expiredAt = now.minusDays(1);
+
+            // act & assert
+            assertThrows(IllegalArgumentException.class, () -> {
+                Coupon.create(name, discountPolicy, discountAmount, discountRate, issuedAt, expiredAt, quantity);
+            });
+        }
+
+        @DisplayName("쿠폰 수량이 1 미만이면 IllegalArgumentException 예외가 발생한다.")
+        @Test
+        void returnIllegalArgumentException_whenQuantityIsLessThanOne() {
+            // arrange
+            quantity = 0;
+
+            // act & assert
+            assertThrows(IllegalArgumentException.class, () -> {
+                Coupon.create(name, discountPolicy, discountAmount, discountRate, issuedAt, expiredAt, quantity);
+            });
+        }
+
+        @DisplayName("모든 조건을 만족하면 쿠폰이 정상적으로 생성된다.")
+        @Test
+        void createCouponSuccessfully_whenAllConditionsAreMet() {
+            // act
+            Coupon coupon = Coupon.create(name, discountPolicy, discountAmount, discountRate, issuedAt, expiredAt, quantity);
+
+            // assert
+            assertThat(coupon.getName()).isEqualTo(name);
+            assertThat(coupon.getDiscountPolicy()).isEqualTo(discountPolicy);
+            assertThat(coupon.getDiscountAmount()).isEqualTo(discountAmount);
+            assertThat(coupon.getDiscountRate()).isEqualTo(discountRate);
+            assertThat(coupon.getIssuedAt()).isEqualTo(issuedAt);
+            assertThat(coupon.getExpiredAt()).isEqualTo(expiredAt);
+            assertThat(coupon.getQuantity()).isEqualTo(quantity);
         }
     }
 
