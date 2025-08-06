@@ -11,7 +11,7 @@ import com.loopers.domain.product.ProductCommand;
 import com.loopers.domain.product.ProductInfo;
 import com.loopers.domain.product.ProductService;
 import com.loopers.domain.user.UserService;
-import com.loopers.support.OrderStatus;
+import com.loopers.support.enums.OrderStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +37,8 @@ public class OrderFacade {
                         .map(OrderCriteria.OrderItem::productId)
                         .toList()
         );
+
+        //TODO: 쿠폰 적용
 
         // 결제 처리
         OrderStatus orderStatus = paymentService.pay(userResult.id(), productInfos);

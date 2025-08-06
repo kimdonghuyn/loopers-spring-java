@@ -1,7 +1,7 @@
 package com.loopers.domain.user;
 
 import com.loopers.domain.BaseEntity;
-import com.loopers.support.Gender;
+import com.loopers.support.enums.Gender;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -2,7 +2,7 @@ package com.loopers.domain.product;
 
 import com.loopers.domain.brand.BrandEntity;
 import com.loopers.infrastructure.brand.BrandJpaRepository;
-import com.loopers.support.SortType;
+import com.loopers.support.enums.SortType;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
 import lombok.RequiredArgsConstructor;

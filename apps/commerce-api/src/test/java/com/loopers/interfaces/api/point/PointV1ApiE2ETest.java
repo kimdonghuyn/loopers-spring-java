@@ -3,7 +3,7 @@ package com.loopers.interfaces.api.point;
 import com.loopers.application.user.UserCriteria;
 import com.loopers.application.user.UserFacade;
 import com.loopers.interfaces.api.ApiResponse;
-import com.loopers.support.Gender;
+import com.loopers.support.enums.Gender;
 import com.loopers.utils.DatabaseCleanUp;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;

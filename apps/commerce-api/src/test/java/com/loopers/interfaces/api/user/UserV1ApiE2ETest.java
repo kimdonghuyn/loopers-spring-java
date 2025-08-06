@@ -4,7 +4,7 @@ import com.loopers.domain.user.UserCommand;
 import com.loopers.domain.user.UserInfo;
 import com.loopers.domain.user.UserService;
 import com.loopers.interfaces.api.ApiResponse;
-import com.loopers.support.Gender;
+import com.loopers.support.enums.Gender;
 import com.loopers.utils.DatabaseCleanUp;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;

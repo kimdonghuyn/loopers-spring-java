@@ -6,7 +6,7 @@ import com.loopers.domain.product.ProductRepository;
 import com.loopers.domain.product.ProductWithLikeCount;
 import com.loopers.domain.user.*;
 import com.loopers.infrastructure.brand.BrandJpaRepository;
-import com.loopers.support.Gender;
+import com.loopers.support.enums.Gender;
 import com.loopers.utils.DatabaseCleanUp;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

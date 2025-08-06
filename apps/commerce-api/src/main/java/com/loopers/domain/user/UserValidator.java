@@ -1,6 +1,6 @@
 package com.loopers.domain.user;
 
-import com.loopers.support.Gender;
+import com.loopers.support.enums.Gender;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
 

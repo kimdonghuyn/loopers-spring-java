@@ -4,7 +4,7 @@ import com.loopers.application.user.UserCriteria;
 import com.loopers.application.user.UserFacade;
 import com.loopers.domain.user.UserCommand;
 import com.loopers.domain.user.UserService;
-import com.loopers.support.Gender;
+import com.loopers.support.enums.Gender;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
 import com.loopers.utils.DatabaseCleanUp;

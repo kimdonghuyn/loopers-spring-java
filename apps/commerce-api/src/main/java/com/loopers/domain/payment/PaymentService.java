@@ -1,7 +1,7 @@
 package com.loopers.domain.payment;
 
 import com.loopers.domain.product.ProductInfo;
-import com.loopers.support.OrderStatus;
+import com.loopers.support.enums.OrderStatus;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
 import lombok.RequiredArgsConstructor;

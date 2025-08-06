@@ -2,7 +2,7 @@ package com.loopers.application.order;
 
 import com.loopers.domain.order.OrderInfo;
 import com.loopers.domain.order.OrderItemEntity;
-import com.loopers.support.OrderStatus;
+import com.loopers.support.enums.OrderStatus;
 
 import java.util.List;
 

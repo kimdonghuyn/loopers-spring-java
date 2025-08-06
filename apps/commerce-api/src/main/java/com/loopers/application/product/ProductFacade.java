@@ -5,7 +5,7 @@ import com.loopers.domain.brand.BrandService;
 import com.loopers.domain.product.ProductEntity;
 import com.loopers.domain.product.ProductInfo;
 import com.loopers.domain.product.ProductService;
-import com.loopers.support.SortType;
+import com.loopers.support.enums.SortType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;

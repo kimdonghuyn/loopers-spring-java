@@ -1,7 +1,7 @@
 package com.loopers.domain.order;
 
 import com.loopers.domain.BaseEntity;
-import com.loopers.support.OrderStatus;
+import com.loopers.support.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

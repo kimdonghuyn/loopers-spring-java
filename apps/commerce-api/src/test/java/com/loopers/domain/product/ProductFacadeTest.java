@@ -6,7 +6,7 @@ import com.loopers.domain.brand.BrandEntity;
 import com.loopers.domain.brand.BrandRepository;
 import com.loopers.domain.like.LikeEntity;
 import com.loopers.domain.like.LikeRepository;
-import com.loopers.support.SortType;
+import com.loopers.support.enums.SortType;
 import com.loopers.utils.DatabaseCleanUp;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
