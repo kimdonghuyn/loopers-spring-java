@@ -184,7 +184,7 @@ public class CouponServiceIntegrationTest {
             Long invalidCouponId = 999L;
 
             // act
-            Optional<Coupon> foundCoupon = couponService.getCoupon(invalidCouponId);
+            Optional<CouponInfo> foundCoupon = couponService.getCoupon(invalidCouponId);
 
             // assert
             assertThat(foundCoupon).isEmpty();

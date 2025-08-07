@@ -36,7 +36,8 @@ public class CouponService {
         couponRepository.save(coupon);
     }
 
-    public Optional<Coupon> getCoupon(Long couponId) {
-        return couponRepository.findById(couponId);
+    public Optional<CouponInfo> getCoupon(Long couponId) {
+        return couponRepository.findById(couponId)
+                .map(CouponInfo::from);
     }
 }
