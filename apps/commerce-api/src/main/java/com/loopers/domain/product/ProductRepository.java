@@ -14,5 +14,7 @@ public interface ProductRepository {
 
     Optional<ProductEntity> findById(Long id);
 
+    Optional<ProductEntity> findByIdForUpdate(Long id);
+
     List<ProductWithLikeCount> findLikedProductsByUserId(Long userId);
 }
