@@ -4,6 +4,10 @@ import com.loopers.application.order.OrderCriteria;
 import com.loopers.application.order.OrderFacade;
 import com.loopers.application.order.OrderResult;
 import com.loopers.domain.brand.BrandEntity;
+import com.loopers.domain.coupon.Coupon;
+import com.loopers.domain.coupon.CouponCommand;
+import com.loopers.domain.coupon.CouponInfo;
+import com.loopers.domain.coupon.CouponService;
 import com.loopers.domain.point.PointCommand;
 import com.loopers.domain.point.PointRepository;
 import com.loopers.domain.point.PointService;
@@ -14,6 +18,8 @@ import com.loopers.domain.product.ProductService;
 import com.loopers.domain.user.*;
 import com.loopers.infrastructure.brand.BrandJpaRepository;
 import com.loopers.infrastructure.product.ProductJpaRepository;
+import com.loopers.support.enums.CouponStatus;
+import com.loopers.support.enums.DiscountPolicy;
 import com.loopers.support.enums.Gender;
 import com.loopers.support.enums.OrderStatus;
 import com.loopers.support.error.CoreException;
@@ -21,10 +27,13 @@ import com.loopers.utils.DatabaseCleanUp;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.concurrent.*;
@@ -60,12 +69,18 @@ public class OrderServiceIntegrationTest {
     private DatabaseCleanUp databaseCleanUp;
     @Autowired
     private UserRepository userRepository;
+
     @Autowired
     private OrderFacade orderFacade;
+
     @Autowired
     private UserService userService;
+
     @Autowired
     private PointService pointService;
+
+    @Autowired
+    private CouponService couponService;
 
     @AfterEach
     void tearDown() {
@@ -356,5 +371,59 @@ public class OrderServiceIntegrationTest {
                 () -> assertThat(failure.get()).isEqualTo(5),
                 () -> assertThat(productRepository.findById(1L).get().getStock()).isEqualTo(0)
         );
+    }
+
+    @Test
+    @DisplayName("주문 중 하나라도 실패하면(재고 차감 단계에서 예외), 쿠폰/재고/포인트 모두 롤백된다.")
+    void rollback_all_when_any_step_fails() {
+        // arrange
+        UserInfo user = userService.signUp(new UserCommand.SignUp(
+                "loopers123", "hyun", "loopers@naver.com", "1990-01-01", Gender.F
+        ));
+        pointService.initPoint(new PointCommand.Init(user.loginId().getLoginId(), 30000L));
+        long beforePoint = pointRepository.findByLoginId(new LoginId("loopers123")).orElseThrow().getAmount();
+
+        BrandEntity brand = brandJpaRepository.save(new BrandEntity("아디다스", "아디다스 입니다."));
+        var p = new ProductCommand.Create("운동복 세트", "그냥 운동", 10000, 5, brand.getId());
+        productService.save(p);
+        int beforeStock = productRepository.findById(1L).orElseThrow().getStock();
+
+        Long couponId = null;
+        try {
+            Coupon created = couponService.createCoupon(new CouponCommand.Create(
+                    "테스트쿠폰", DiscountPolicy.FIXED, 1000, null,
+                    LocalDateTime.now(), LocalDateTime.now().plusDays(1), 1
+            ));
+            couponId = created.getId();
+        } catch (Exception ignore) {
+        }
+
+        var criteria = new OrderCriteria.Order(
+                1L,
+                "loopers123",
+                List.of(new OrderCriteria.OrderItem(1L, 2))
+        );
+        List<ProductInfo> products = productService.getProductsByProductId(List.of(1L));
+        OrderCommand.Order orderCmd = criteria.toCommand(products);
+
+        Mockito.doThrow(new RuntimeException("force failure during stock update"))
+                .when(productJpaRepository).save(Mockito.any());
+
+        assertThrows(CoreException.class, () -> {
+            productService.consume(new ProductCommand.Consume(1L, new Quantity(11)));
+        });
+
+        long afterPoint = pointRepository.findByLoginId(new LoginId("loopers123")).orElseThrow().getAmount();
+        assertThat(afterPoint).isEqualTo(beforePoint);
+
+        int afterStock = productRepository.findById(1L).orElseThrow().getStock();
+        assertThat(afterStock).isEqualTo(beforeStock);
+
+        if (couponId != null) {
+            CouponInfo couponInfo = couponService.getCoupon(couponId).orElseThrow();
+            assertThat(couponInfo.status()).isEqualTo(CouponStatus.ACTIVE);
+        }
+
+        Mockito.reset(productJpaRepository);
     }
 }
