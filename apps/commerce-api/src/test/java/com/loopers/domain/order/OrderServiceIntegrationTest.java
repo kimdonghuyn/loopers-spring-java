@@ -26,6 +26,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -279,5 +283,78 @@ public class OrderServiceIntegrationTest {
                     productService.consume(new ProductCommand.Consume(item.productId(), item.quantity()))
             );
         });
+    }
+
+    @DisplayName("동일한 상품에 대해 여러 주문이 동시에 요청되어도, 재고가 정상적으로 차감되어야 한다. ")
+    @Test
+    void concurrentOrderOnSameProduct() {
+        // arrange
+        userService.signUp(new UserCommand.SignUp(
+                "loopers123",
+                "hyun",
+                "loopers@naver.com",
+                "1990-01-01",
+                Gender.F));
+
+        pointService.initPoint(new PointCommand.Init(
+                "loopers123",
+                30000L
+        ));
+
+        BrandEntity brand = brandJpaRepository.save(new BrandEntity("아디다스", "아디다스 입니다."));
+        var productCommand = new ProductCommand.Create(
+                "운동복 세트",
+                "그냥 운동할 때 입는 거임",
+                10000,
+                10,   // 초기 재고
+                brand.getId()
+        );
+        productService.save(productCommand);
+
+        final int threads = 15;
+        final int qtyPerOrder = 1;
+
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch doneLatch = new CountDownLatch(threads);
+
+        AtomicInteger success = new AtomicInteger();
+        AtomicInteger failure = new AtomicInteger();
+
+        ExecutorService pool = Executors.newFixedThreadPool(threads);
+        try {
+            var futures = new ArrayList<Future<?>>();
+            IntStream.range(0, threads).forEach(i -> futures.add(pool.submit(() -> {
+                try {
+                    startLatch.await();
+
+                    productService.consume(new ProductCommand.Consume(1L, new Quantity(qtyPerOrder)));
+                    success.incrementAndGet();
+                } catch (Exception e) {
+                    failure.incrementAndGet();
+                } finally {
+                    doneLatch.countDown();
+                }
+            })));
+
+            startLatch.countDown();
+
+            boolean finished = doneLatch.await(10, TimeUnit.SECONDS);
+            if (!finished) {
+                throw new AssertionError("동시성 테스트가 제한 시간 내에 끝나지 않았습니다.");
+            }
+
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+            throw new AssertionError("테스트가 인터럽트되었습니다.", ie);
+        } finally {
+            pool.shutdownNow();
+        }
+
+        // assert
+        assertAll(
+                () -> assertThat(success.get()).isEqualTo(10),
+                () -> assertThat(failure.get()).isEqualTo(5),
+                () -> assertThat(productRepository.findById(1L).get().getStock()).isEqualTo(0)
+        );
     }
 }
