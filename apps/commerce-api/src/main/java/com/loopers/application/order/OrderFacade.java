@@ -55,7 +55,7 @@ public class OrderFacade {
         Optional<CouponInfo> couponInfo = couponService.getCoupon(userCouponInfo.couponId());
 
         // TODO: 추후 쿠폰 적용 로직 개선하기
-        int disCountedTotalPrice = couponService.applyCoupon(productPrices,
+        int disCountedTotalPrice = couponService.applyCoupon(productPrices, couponInfo.get().status(), couponInfo.get().expiredAt(),
                 couponInfo.get().discountPolicy(), couponInfo.get().discountRate(), couponInfo.get().discountAmount());
 
         // 결제 처리 (외부 결제 시스템)
