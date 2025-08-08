@@ -1,11 +1,13 @@
 package com.loopers.domain.coupon;
 
+import com.loopers.support.enums.DiscountPolicy;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -39,5 +41,26 @@ public class CouponService {
     public Optional<CouponInfo> getCoupon(Long couponId) {
         return couponRepository.findById(couponId)
                 .map(CouponInfo::from);
+    }
+
+    public int applyCoupon(
+            final List<Integer> productPrices,
+            final DiscountPolicy discountPolicy,
+            final Double discountRate,
+            final int discountAmount
+    ) {
+        if (productPrices.isEmpty()) {
+            return 0;
+        }
+
+        int totalPrice = productPrices.stream().mapToInt(Integer::intValue).sum();
+
+        if (discountPolicy == DiscountPolicy.RATE) {
+            return (int) (totalPrice * (1 - discountRate));
+        } else if (discountPolicy == DiscountPolicy.FIXED) {
+            return totalPrice - discountAmount;
+        } else {
+            throw new CoreException(ErrorType.BAD_REQUEST, "유효하지 않은 할인 정책입니다.");
+        }
     }
 }

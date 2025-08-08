@@ -113,4 +113,14 @@ public class Coupon extends BaseEntity {
 
         this.quantity--;
     }
+
+    public int calculateDiscountPrice(int price) {
+        if (this.discountPolicy == DiscountPolicy.FIXED) {
+            return this.discountAmount;
+        } else if (this.discountPolicy == DiscountPolicy.RATE) {
+            return (int) (price * this.discountRate);
+        } else {
+            throw new IllegalArgumentException("유효하지 않은 할인 정책입니다.");
+        }
+    }
 }

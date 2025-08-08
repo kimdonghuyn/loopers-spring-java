@@ -33,7 +33,7 @@ public record UserCouponResult() {
     ) {
         public static CouponWithDetail from(UserCouponInfo userCouponInfo, CouponInfo couponInfo) {
             return new CouponWithDetail(
-                    userCouponInfo.Id(),
+                    userCouponInfo.id(),
                     userCouponInfo.userId(),
                     userCouponInfo.couponId(),
                     userCouponInfo.status(),

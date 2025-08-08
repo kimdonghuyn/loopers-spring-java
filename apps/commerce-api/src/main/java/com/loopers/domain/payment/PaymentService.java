@@ -1,24 +1,18 @@
 package com.loopers.domain.payment;
 
-import com.loopers.domain.product.ProductInfo;
 import com.loopers.support.enums.OrderStatus;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 @Component
 @RequiredArgsConstructor
 public class PaymentService {
 
-    public OrderStatus pay(Long userId, List<ProductInfo> productInfos) {
-        int totalPrice = productInfos.stream()
-                .mapToInt(ProductInfo::price)
-                .sum();
+    public OrderStatus pay(PaymentCommand.Payment paymentCriteria) {
 
-        PaymentCommand.Payment paymentCommand = new PaymentCommand.Payment(userId, totalPrice);
+        PaymentCommand.Payment paymentCommand = new PaymentCommand.Payment(paymentCriteria.userId(), paymentCriteria.totalPrice());
         // 외부 결제 시스템과 연동하여 결제 처리
          boolean paymentSuccess = true; // 성공 했다고 가정
 

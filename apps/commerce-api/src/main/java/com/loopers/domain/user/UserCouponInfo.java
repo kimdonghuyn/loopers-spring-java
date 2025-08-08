@@ -5,7 +5,7 @@ import com.loopers.support.enums.CouponStatus;
 import java.time.LocalDateTime;
 
 public record UserCouponInfo(
-        Long Id,
+        Long id,
         Long userId,
         Long couponId,
         LocalDateTime usedAt,

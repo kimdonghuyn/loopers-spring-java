@@ -8,12 +8,10 @@ import com.loopers.domain.point.PointCommand;
 import com.loopers.domain.point.PointRepository;
 import com.loopers.domain.point.PointService;
 import com.loopers.domain.product.ProductCommand;
+import com.loopers.domain.product.ProductInfo;
 import com.loopers.domain.product.ProductRepository;
 import com.loopers.domain.product.ProductService;
-import com.loopers.domain.user.LoginId;
-import com.loopers.domain.user.UserCommand;
-import com.loopers.domain.user.UserRepository;
-import com.loopers.domain.user.UserService;
+import com.loopers.domain.user.*;
 import com.loopers.infrastructure.brand.BrandJpaRepository;
 import com.loopers.infrastructure.product.ProductJpaRepository;
 import com.loopers.support.enums.Gender;
@@ -117,7 +115,7 @@ public class OrderServiceIntegrationTest {
     @DisplayName("주문 시 포인트가 차감된다.")
     void reducePointOnOrder() {
         // arrange
-        userService.signUp(new UserCommand.SignUp(
+        UserInfo userInfo = userService.signUp(new UserCommand.SignUp(
                 "loopers123",
                 "hyun",
                 "loopers@naver.com",
@@ -142,14 +140,10 @@ public class OrderServiceIntegrationTest {
 
         productService.save(productCommand);
 
-        // act
-        var orderCriteria = new OrderCriteria.Order(
-                1L,
-                "loopers123",
-                List.of(new OrderCriteria.OrderItem(1L, 5))
-        );
+        int disCountedTotalPrice = 5000;  // 할인된 금액
 
-        OrderResult orderResult = orderFacade.order(orderCriteria);
+        // act
+        pointService.use(new PointCommand.Use(userInfo.loginId().getLoginId(), (long) disCountedTotalPrice));
 
         // assert
         assertThat(pointRepository.findByLoginId(new LoginId("loopers123")).get().getAmount())
@@ -160,7 +154,7 @@ public class OrderServiceIntegrationTest {
     @DisplayName("주문 시 포인트가 부족하면 예외를 던진다.")
     void return_BadRequestWhenPointInsufficient() {
         // arrange
-        userService.signUp(new UserCommand.SignUp(
+        UserInfo userInfo = userService.signUp(new UserCommand.SignUp(
                 "loopers123",
                 "hyun",
                 "loopers@naver.com",
@@ -186,21 +180,11 @@ public class OrderServiceIntegrationTest {
         productService.save(productCommand);
 
         // act
-        var orderCriteria = new OrderCriteria.Order(
-                1L,
-                "loopers123",
-                List.of(new OrderCriteria.OrderItem(1L, 5))
-        );
+        int disCountedTotalPrice = 35000;  // 35개 주문
 
-        OrderResult orderResult = orderFacade.order(orderCriteria);
-
-        // assert
-        assertThrows(CoreException.class, () -> {
-            orderFacade.order(new OrderCriteria.Order(
-                    1L,
-                    "loopers123",
-                    List.of(new OrderCriteria.OrderItem(1L, 6)) // 6개 주문 시 포인트 부족
-            ));
+        // act & assert
+        assertThrows(IllegalArgumentException.class, () -> {
+            pointService.use(new PointCommand.Use(userInfo.loginId().getLoginId(), (long) disCountedTotalPrice));
         });
     }
 
@@ -238,7 +222,13 @@ public class OrderServiceIntegrationTest {
                 List.of(new OrderCriteria.OrderItem(1L, 2))
         );
 
-        OrderResult orderResult = orderFacade.order(orderCriteria);
+        List<ProductInfo> productInfos = productService.getProductsByProductId(List.of(1L));
+
+        OrderCommand.Order orderCommand = orderCriteria.toCommand(productInfos);
+
+        orderCommand.orderItems().forEach(item ->
+                productService.consume(new ProductCommand.Consume(item.productId(), item.quantity()))
+        );
 
         // assert
         assertThat(productRepository.findById(1L).get().getStock()).isEqualTo(8); // 10 - 2
@@ -267,7 +257,7 @@ public class OrderServiceIntegrationTest {
                 "운동복 세트",
                 "그냥 운동할 때 입는 거임",
                 10000,
-                10,
+                0,
                 brand.getId()
         );
         productService.save(productCommand);
@@ -279,15 +269,15 @@ public class OrderServiceIntegrationTest {
                 List.of(new OrderCriteria.OrderItem(1L, 2))
         );
 
-        OrderResult orderResult = orderFacade.order(orderCriteria);
+        List<ProductInfo> productInfos = productService.getProductsByProductId(List.of(1L));
+
+        OrderCommand.Order orderCommand = orderCriteria.toCommand(productInfos);
 
         // assert
-        assertThrows(IllegalArgumentException.class, () -> {
-            orderFacade.order(new OrderCriteria.Order(
-                    1L,
-                    "loopers123",
-                    List.of(new OrderCriteria.OrderItem(1L, 9)) // 재고 부족
-            ));
+        assertThrows(CoreException.class, () -> {
+            orderCommand.orderItems().forEach(item ->
+                    productService.consume(new ProductCommand.Consume(item.productId(), item.quantity()))
+            );
         });
     }
 }

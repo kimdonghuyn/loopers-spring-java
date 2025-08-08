@@ -1,6 +1,8 @@
 package com.loopers.application.order;
 
 import com.loopers.application.user.UserResult;
+import com.loopers.domain.coupon.CouponInfo;
+import com.loopers.domain.coupon.CouponService;
 import com.loopers.domain.order.OrderCommand;
 import com.loopers.domain.order.OrderInfo;
 import com.loopers.domain.order.OrderService;
@@ -10,6 +12,9 @@ import com.loopers.domain.point.PointService;
 import com.loopers.domain.product.ProductCommand;
 import com.loopers.domain.product.ProductInfo;
 import com.loopers.domain.product.ProductService;
+import com.loopers.domain.user.UserCouponCommand;
+import com.loopers.domain.user.UserCouponInfo;
+import com.loopers.domain.user.UserCouponService;
 import com.loopers.domain.user.UserService;
 import com.loopers.support.enums.OrderStatus;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +22,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -27,27 +33,39 @@ public class OrderFacade {
     private final OrderService orderService;
     private final ProductService productService;
     private final PointService pointService;
+    private final UserCouponService userCouponService;
+    private final CouponService couponService;
 
     @Transactional
     public OrderResult order(OrderCriteria.Order orderCriteria) {
         UserResult userResult = UserResult.from(userService.getUserInfo(orderCriteria.loginId()));
 
-        List<ProductInfo> productInfos = productService.getProductsByProductId(
-                orderCriteria.orderItems().stream()
-                        .map(OrderCriteria.OrderItem::productId)
-                        .toList()
-        );
+        List<Long> productIds = orderCriteria.orderItems().stream()
+                .map(OrderCriteria.OrderItem::productId)
+                .toList();
 
-        //TODO: 쿠폰 적용
+        List<ProductInfo> productInfos = productService.getProductsByProductId(productIds);
 
-        // 결제 처리
-        OrderStatus orderStatus = paymentService.pay(userResult.id(), productInfos);
+        // 쿠폰 적용
+        List<Integer> productPrices = productInfos.stream()
+                .map(ProductInfo::price)
+                .toList();
+
+        UserCouponInfo userCouponInfo = userCouponService.getUserCoupon(new UserCouponCommand.GetUserCoupon(userResult.id()));
+        Optional<CouponInfo> couponInfo = couponService.getCoupon(userCouponInfo.couponId());
+
+        // TODO: 추후 쿠폰 적용 로직 개선하기
+        int disCountedTotalPrice = couponService.applyCoupon(productPrices,
+                couponInfo.get().discountPolicy(), couponInfo.get().discountRate(), couponInfo.get().discountAmount());
+
+        // 결제 처리 (외부 결제 시스템)
+        OrderStatus orderStatus = paymentService.pay(OrderCriteria.Payment.toCommand(userResult.id(), disCountedTotalPrice));
 
         OrderCommand.Order orderCommand = orderCriteria.toCommand(productInfos);
         OrderInfo orderInfo = orderService.order(orderCommand);
 
         // 포인트 차감
-        pointService.use(new PointCommand.Use(orderCriteria.loginId(), (long) orderInfo.totalPrice()));
+        pointService.use(new PointCommand.Use(orderCriteria.loginId(), (long) disCountedTotalPrice));
 
         // 재고 차감
         orderCommand.orderItems().forEach(item ->
