@@ -24,4 +24,9 @@ public class PointRepositoryImpl implements PointRepository {
     public Optional<PointEntity> findByLoginId(LoginId loginId) throws CoreException {
         return pointJpaRepository.findByLoginId(loginId);
     }
+
+    @Override
+    public Optional<PointEntity> findByLoginIdForUpdate(LoginId loginId) throws CoreException {
+        return pointJpaRepository.findByLoginIdForUpdate(loginId);
+    }
 }
