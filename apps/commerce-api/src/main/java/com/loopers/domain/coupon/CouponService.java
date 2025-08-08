@@ -1,16 +1,16 @@
 package com.loopers.domain.coupon;
 
 import com.loopers.support.enums.CouponStatus;
-import com.loopers.support.enums.DiscountPolicy;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+
+import static java.time.LocalDateTime.now;
 
 @Component
 @RequiredArgsConstructor
@@ -45,34 +45,29 @@ public class CouponService {
                 .map(CouponInfo::from);
     }
 
-    public int applyCoupon(
-            final List<Integer> productPrices,
-            final CouponStatus couponStatus,
-            final LocalDateTime expiredAt,
-            final DiscountPolicy discountPolicy,
-            final Double discountRate,
-            final int discountAmount
-    ) {
-        if (couponStatus == CouponStatus.INACTIVE) {
-            throw new CoreException(ErrorType.BAD_REQUEST, "쿠폰이 비활성화 상태입니다.");
-        }
-
-        if (expiredAt.isBefore(LocalDateTime.now())) {
-            throw new CoreException(ErrorType.BAD_REQUEST, "사용기한이 지난 쿠폰입니다.");
-        }
-
-        if (productPrices.isEmpty()) {
-            return 0;
-        }
-
-        int totalPrice = productPrices.stream().mapToInt(Integer::intValue).sum();
-
-        if (discountPolicy == DiscountPolicy.RATE) {
-            return (int) (totalPrice * (1 - discountRate));
-        } else if (discountPolicy == DiscountPolicy.FIXED) {
-            return totalPrice - discountAmount;
-        } else {
-            throw new CoreException(ErrorType.BAD_REQUEST, "유효하지 않은 할인 정책입니다.");
-        }
+    @Transactional
+    public int calculateDiscountPrice(final List<Integer> productPrices, final Long couponId) {
+        return couponRepository.findById(couponId)
+                .map(coupon -> {
+                    if (coupon.getExpiredAt().isBefore(now())) {
+                        throw new CoreException(ErrorType.BAD_REQUEST, "사용기한이 지난 쿠폰입니다.");
+                    }
+                    if (coupon.getStatus() == CouponStatus.INACTIVE) {
+                        throw new CoreException(ErrorType.BAD_REQUEST, "쿠폰이 활성화되지 않았습니다.");
+                    }
+                    return switch (coupon.getDiscountPolicy()) {
+                        case FIXED -> productPrices.stream()
+                                .mapToInt(price -> Math.max(price - coupon.getDiscountAmount(), 0))
+                                .sum();
+                        case RATE -> productPrices.stream()
+                                .mapToInt(price -> {
+                                    int off = (int) Math.round(price * (coupon.getDiscountRate() / 100.0));
+                                    return Math.max(price - off, 0);
+                                })
+                                .sum();
+                        default -> throw new CoreException(ErrorType.BAD_REQUEST, "지원하지 않는 할인 정책입니다.");
+                    };
+                })
+                .orElse(0);
     }
 }

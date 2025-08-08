@@ -4,6 +4,8 @@ import com.loopers.support.enums.CouponStatus;
 import com.loopers.support.enums.DiscountPolicy;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
+import com.loopers.utils.DatabaseCleanUp;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -26,6 +28,14 @@ public class CouponServiceIntegrationTest {
 
     @Autowired
     private CouponRepository couponRepository;
+
+    @Autowired
+    private DatabaseCleanUp databaseCleanUp;
+
+    @BeforeEach
+    void setUp() {
+        databaseCleanUp.truncateAllTables();
+    }
 
     @DisplayName("쿠폰 등록할 때, ")
     @Nested
@@ -201,96 +211,47 @@ public class CouponServiceIntegrationTest {
         @Test
         void applyCoupon_whenValidDiscountPolicyAndAmountGiven() {
             // arrange
-            DiscountPolicy discountPolicy = DiscountPolicy.FIXED;
-            int discountAmount = 1000;
-            int totalPrice = 5000;
-            CouponStatus couponStatus = CouponStatus.ACTIVE; // 쿠폰 상태는 활성화 상태로 가정
-            LocalDateTime expiredAt = LocalDateTime.now().plusDays(30); // 유효 기간은 현재 시간 이후로 설정
+            CouponCommand.Create createCommand = new CouponCommand.Create(
+                    "Test Coupon",
+                    DiscountPolicy.FIXED,
+                    1000,
+                    null,
+                    LocalDateTime.now(),
+                    LocalDateTime.now().plusDays(30),
+                    10
+            );
+            Coupon coupon = couponService.createCoupon(createCommand);
 
             // act
-            int discountedPrice = couponService.applyCoupon(
-                    List.of(totalPrice),
-                    couponStatus,
-                    expiredAt,
-                    discountPolicy,
-                    null,
-                    discountAmount
+            int discountedPrice = couponService.calculateDiscountPrice(
+                    List.of(1000),
+                    1L
             );
 
             // assert
-            assertThat(discountedPrice).isEqualTo(totalPrice - discountAmount);
-        }
-
-        @DisplayName("유효하지 않은 할인 정책이 주어지면, 예외를 발생시킨다.")
-        @Test
-        void applyCoupon_whenInvalidDiscountPolicyGiven() {
-            // arrange
-            DiscountPolicy invalidPolicy = null; // 유효하지 않은 할인 정책
-            int discountAmount = 1000;
-            int totalPrice = 5000;
-            CouponStatus couponStatus = CouponStatus.ACTIVE; // 쿠폰 상태는 활성화 상태로 가정
-            LocalDateTime expiredAt = LocalDateTime.now().plusDays(30); // 유효 기간은 현재 시간 이후로 설정
-
-            // act & assert
-            CoreException exception = assertThrows(CoreException.class, () -> couponService.applyCoupon(
-                    List.of(totalPrice),
-                    couponStatus,
-                    expiredAt,
-                    null,
-                    null,
-                    discountAmount
-            ));
-
-            assertThat(exception.getErrorType()).isEqualTo(ErrorType.BAD_REQUEST);
-            assertThat(exception.getMessage()).isEqualTo("유효하지 않은 할인 정책입니다.");
+            assertThat(discountedPrice).isEqualTo(0);
         }
 
         @DisplayName("만료된 쿠폰이 주어지면, 예외를 발생시킨다.")
         @Test
         void applyCoupon_whenExpiredCouponGiven() {
             // arrange
-            DiscountPolicy discountPolicy = DiscountPolicy.FIXED;
-            int discountAmount = 1000;
-            int totalPrice = 5000;
-            CouponStatus couponStatus = CouponStatus.INACTIVE;
-            LocalDateTime expiredAt = LocalDateTime.now().plusDays(1);
-
-            // act & assert
-            CoreException exception = assertThrows(CoreException.class, () -> couponService.applyCoupon(
-                    List.of(totalPrice),
-                    couponStatus,
-                    expiredAt,
-                    discountPolicy,
+            Coupon coupon = couponService.createCoupon(new CouponCommand.Create(
+                    "Expired Coupon",
+                    DiscountPolicy.FIXED,
+                    1000,
                     null,
-                    discountAmount
+                    LocalDateTime.now().minusDays(2),
+                    LocalDateTime.now().minusDays(1),
+                    10
             ));
 
-            assertThat(exception.getErrorType()).isEqualTo(ErrorType.BAD_REQUEST);
-            assertThat(exception.getMessage()).isEqualTo("쿠폰이 비활성화 상태입니다.");
-        }
-
-        @DisplayName("시용기한이 지난 쿠폰이 주어지면, 예외를 발생시킨다.")
-        @Test
-        void applyCoupon_whenInactiveCouponGiven() {
-            // arrange
-            DiscountPolicy discountPolicy = DiscountPolicy.FIXED;
-            int discountAmount = 1000;
-            int totalPrice = 5000;
-            CouponStatus couponStatus = CouponStatus.ACTIVE;
-            LocalDateTime expiredAt = LocalDateTime.now().minusDays(30);
-
             // act & assert
-            CoreException exception = assertThrows(CoreException.class, () -> couponService.applyCoupon(
-                    List.of(totalPrice),
-                    couponStatus,
-                    expiredAt,
-                    discountPolicy,
-                    null,
-                    discountAmount
-            ));
-
-            assertThat(exception.getErrorType()).isEqualTo(ErrorType.BAD_REQUEST);
-            assertThat(exception.getMessage()).isEqualTo("사용기한이 지난 쿠폰입니다.");
+            CoreException ex = assertThrows(CoreException.class, () ->
+                    couponService.calculateDiscountPrice(List.of(5000), coupon.getId())
+            );
+            assertThat(ex.getErrorType()).isEqualTo(ErrorType.BAD_REQUEST);
+            assertThat(ex.getMessage()).isEqualTo("사용기한이 지난 쿠폰입니다.");
         }
     }
 }

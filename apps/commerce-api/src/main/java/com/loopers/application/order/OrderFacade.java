@@ -51,21 +51,21 @@ public class OrderFacade {
                 .map(ProductInfo::price)
                 .toList();
 
-        UserCouponInfo userCouponInfo = userCouponService.getUserCoupon(new UserCouponCommand.GetUserCoupon(userResult.id()));
-        Optional<CouponInfo> couponInfo = couponService.getCoupon(userCouponInfo.couponId());
+        int totalPrice = productPrices.stream().mapToInt(Integer::intValue).sum();
 
-        // TODO: 추후 쿠폰 적용 로직 개선하기
-        int disCountedTotalPrice = couponService.applyCoupon(productPrices, couponInfo.get().status(), couponInfo.get().expiredAt(),
-                couponInfo.get().discountPolicy(), couponInfo.get().discountRate(), couponInfo.get().discountAmount());
+        UserCouponInfo userCouponInfo = userCouponService.getUserCoupon(new UserCouponCommand.GetUserCoupon(userResult.id()));
+
+        // 할인 금액 계산
+        int discountedTotalPrice = couponService.calculateDiscountPrice(productPrices, userCouponInfo.couponId());
 
         // 결제 처리 (외부 결제 시스템)
-        OrderStatus orderStatus = paymentService.pay(OrderCriteria.Payment.toCommand(userResult.id(), disCountedTotalPrice));
+        OrderStatus orderStatus = paymentService.pay(OrderCriteria.Payment.toCommand(userResult.id(), discountedTotalPrice));
 
         OrderCommand.Order orderCommand = orderCriteria.toCommand(productInfos);
         OrderInfo orderInfo = orderService.order(orderCommand);
 
         // 포인트 차감
-        pointService.use(new PointCommand.Use(orderCriteria.loginId(), (long) disCountedTotalPrice));
+        pointService.use(new PointCommand.Use(orderCriteria.loginId(), (long) discountedTotalPrice));
 
         // 재고 차감
         orderCommand.orderItems().forEach(item ->

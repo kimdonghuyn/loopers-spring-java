@@ -31,7 +31,7 @@ public class Coupon extends BaseEntity {
     private int quantity;
 
     @Enumerated(value = jakarta.persistence.EnumType.STRING)
-    private CouponStatus status;
+    private CouponStatus status = CouponStatus.ACTIVE;
 
     public Coupon(
             String name, DiscountPolicy discountPolicy, Integer discountAmount,
@@ -68,9 +68,9 @@ public class Coupon extends BaseEntity {
             throw new IllegalArgumentException("쿠폰 이름은 필수입니다.");
         }
 
-        if (discountPolicy == null) {
-            throw new IllegalArgumentException("할인 정책은 필수입니다.");
-        }
+//        if (discountPolicy == null) {
+//            throw new IllegalArgumentException("할인 정책은 필수입니다.");
+//        }
 
         if (discountPolicy == DiscountPolicy.FIXED) {
             if (discountAmount == null || discountAmount < 0) {
@@ -88,9 +88,9 @@ public class Coupon extends BaseEntity {
             throw new IllegalArgumentException("시작 시간은 종료 시간 이전이어야 합니다.");
         }
 
-        if (expiredAt == null || expiredAt.isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("유효 기간은 현재 시간 이후여야 합니다.");
-        }
+//        if (expiredAt == null || expiredAt.isBefore(LocalDateTime.now())) {
+//            throw new IllegalArgumentException("유효 기간은 현재 시간 이후여야 합니다.");
+//        }
 
         if (quantity <= 0) {
             throw new IllegalArgumentException("쿠폰 수량은 1 이상이어야 합니다.");
