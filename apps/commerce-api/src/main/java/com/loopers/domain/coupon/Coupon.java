@@ -3,9 +3,12 @@ package com.loopers.domain.coupon;
 import com.loopers.domain.BaseEntity;
 import com.loopers.support.enums.CouponStatus;
 import com.loopers.support.enums.DiscountPolicy;
+import com.loopers.support.error.CoreException;
+import com.loopers.support.error.ErrorType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -32,6 +35,9 @@ public class Coupon extends BaseEntity {
 
     @Enumerated(value = jakarta.persistence.EnumType.STRING)
     private CouponStatus status = CouponStatus.ACTIVE;
+
+    @Version
+    private Long version;
 
     public Coupon(
             String name, DiscountPolicy discountPolicy, Integer discountAmount,
@@ -122,5 +128,12 @@ public class Coupon extends BaseEntity {
         } else {
             throw new IllegalArgumentException("유효하지 않은 할인 정책입니다.");
         }
+    }
+
+    public void useOnceOrThrow(LocalDateTime now) {
+    if (this.status == CouponStatus.INACTIVE) {
+        throw new CoreException(ErrorType.BAD_REQUEST, "쿠폰이 활성화 상태가 아닙니다.");
+    }
+        this.status = CouponStatus.INACTIVE;
     }
 }
