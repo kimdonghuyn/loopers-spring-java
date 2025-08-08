@@ -16,8 +16,8 @@ public class LikeRepositoryImpl implements LikeRepository {
     }
 
     @Override
-    public void deleteByProductId(LikeEntity likeEntity) {
-        likeJpaRepository.deleteById(likeEntity.getProductId());
+    public void deleteByUserIdAndProductId(Long userId, Long productId) {
+        likeJpaRepository.deleteByUserIdAndProductId(userId, productId);
     }
 
     @Override
