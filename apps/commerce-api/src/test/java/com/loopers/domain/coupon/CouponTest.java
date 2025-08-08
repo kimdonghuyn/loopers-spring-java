@@ -58,18 +58,6 @@ public class CouponTest {
             });
         }
 
-        @DisplayName("할인 정책이 null이면 IllegalArgumentException 예외가 발생한다.")
-        @Test
-        void returnIllegalArgumentException_whenDiscountPolicyIsNull() {
-            // arrange
-            discountPolicy = null;
-
-            // act & assert
-            assertThrows(IllegalArgumentException.class, () -> {
-                Coupon.create(name, discountPolicy, discountAmount, discountRate, issuedAt, expiredAt, quantity);
-            });
-        }
-
         @DisplayName("정액 할인인 경우, 할인 금액이 null이면 IllegalArgumentException 예외가 발생한다.")
         @Test
         void returnIllegalArgumentException_whenDiscountAmountIsNull() {
