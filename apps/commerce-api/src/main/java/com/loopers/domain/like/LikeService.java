@@ -4,17 +4,23 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import jakarta.persistence.EntityManager;
+import org.hibernate.exception.ConstraintViolationException;
 
 @Component
 @RequiredArgsConstructor
 public class LikeService {
     private final LikeRepository likeRepository;
+    private final EntityManager em;
 
-    @Transactional
+    @Transactional(noRollbackFor = DataIntegrityViolationException.class)
     public void like(LikeCommand.Like likeCommand) {
+        if (isExistLike(likeCommand)) return;
+
         try {
             likeRepository.save(new LikeEntity(likeCommand.userId(), likeCommand.productId()));
-        } catch (DataIntegrityViolationException ignored) {
+            em.flush();
+        } catch (DataIntegrityViolationException | ConstraintViolationException ignored) {
         }
     }
 
