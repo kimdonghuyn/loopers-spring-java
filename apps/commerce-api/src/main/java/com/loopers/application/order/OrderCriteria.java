@@ -2,6 +2,7 @@ package com.loopers.application.order;
 
 import com.loopers.domain.order.OrderCommand;
 import com.loopers.domain.order.Quantity;
+import com.loopers.domain.payment.PaymentCommand;
 import com.loopers.domain.product.ProductInfo;
 
 import java.util.ArrayList;
@@ -33,4 +34,13 @@ public class OrderCriteria {
         }
     }
     public record OrderItem(Long productId, int quantity) {}
+
+    public record Payment(
+            Long userId,
+            int totalPrice
+    ) {
+        public static PaymentCommand.Payment toCommand(Long userId, int totalPrice) {
+            return new PaymentCommand.Payment(userId, totalPrice);
+        }
+    }
 }

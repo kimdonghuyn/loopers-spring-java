@@ -1,6 +1,6 @@
 package com.loopers.domain.order;
 
-import com.loopers.support.OrderStatus;
+import com.loopers.support.enums.OrderStatus;
 
 import java.util.List;
 

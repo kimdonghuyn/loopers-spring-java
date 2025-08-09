@@ -10,11 +10,9 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/users")
 public class UserV1Controller implements UserV1ApiSpec {
 
-    private final UserService userService;
     private final UserFacade userFacade;
 
-    public UserV1Controller(UserService userService, UserFacade userFacade) {
-        this.userService = userService;
+    public UserV1Controller(UserFacade userFacade) {
         this.userFacade = userFacade;
     }
 

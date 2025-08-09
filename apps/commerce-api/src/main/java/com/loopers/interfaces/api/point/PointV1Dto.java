@@ -2,7 +2,6 @@ package com.loopers.interfaces.api.point;
 
 import com.loopers.application.point.PointCriteria;
 import com.loopers.application.point.PointResult;
-import com.loopers.domain.point.PointEntity;
 import jakarta.validation.constraints.NotNull;
 
 public class PointV1Dto {

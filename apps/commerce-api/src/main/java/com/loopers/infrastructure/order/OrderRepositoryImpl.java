@@ -1,7 +1,6 @@
 package com.loopers.infrastructure.order;
 
 import com.loopers.domain.order.OrderEntity;
-import com.loopers.domain.order.OrderInfo;
 import com.loopers.domain.order.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

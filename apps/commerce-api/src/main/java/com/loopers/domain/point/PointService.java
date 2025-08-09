@@ -5,6 +5,7 @@ import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -37,15 +38,10 @@ public class PointService {
         }
     }
 
-    public void use(PointCommand.Use pointCommand) throws CoreException {
-        Optional<PointEntity> point = pointRepository.findByLoginId(new LoginId(pointCommand.loginId()));
-
-        if (point.isPresent()) {
-            PointEntity pointEntity = point.get();
-            pointEntity.use(pointCommand.amount());
-            pointRepository.save(pointEntity);
-        } else {
-            throw new CoreException(ErrorType.NOT_FOUND);
-        }
+    @Transactional
+    public void use(PointCommand.Use pointCommand) {
+        PointEntity point = pointRepository.findByLoginIdForUpdate(new LoginId(pointCommand.loginId()))
+                .orElseThrow(() -> new CoreException(ErrorType.NOT_FOUND, "포인트 계정이 존재하지 않습니다."));
+        point.use(pointCommand.amount());
     }
 }

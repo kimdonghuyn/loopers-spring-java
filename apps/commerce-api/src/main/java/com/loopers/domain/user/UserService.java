@@ -1,7 +1,5 @@
 package com.loopers.domain.user;
 
-import com.loopers.infrastructure.user.UserJpaRepository;
-import com.loopers.infrastructure.user.UserRepositoryImpl;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
 import jakarta.transaction.Transactional;

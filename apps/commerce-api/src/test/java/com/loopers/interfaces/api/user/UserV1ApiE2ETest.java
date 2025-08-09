@@ -4,7 +4,7 @@ import com.loopers.domain.user.UserCommand;
 import com.loopers.domain.user.UserInfo;
 import com.loopers.domain.user.UserService;
 import com.loopers.interfaces.api.ApiResponse;
-import com.loopers.support.Gender;
+import com.loopers.support.enums.Gender;
 import com.loopers.utils.DatabaseCleanUp;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,7 +18,6 @@ import org.springframework.http.*;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class UserV1ApiE2ETest {

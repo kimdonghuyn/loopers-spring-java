@@ -1,6 +1,5 @@
 package com.loopers.interfaces.api.user;
 
-import com.loopers.domain.user.UserEntity;
 import com.loopers.interfaces.api.ApiResponse;
 import com.loopers.support.error.CoreException;
 import io.swagger.v3.oas.annotations.tags.Tag;

@@ -1,26 +1,20 @@
 package com.loopers.domain.brand;
 
+import com.loopers.domain.BaseEntity;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import static jakarta.persistence.GenerationType.*;
-
 @Entity
 @Table(name = "brand")
 @Getter
-@NoArgsConstructor
-public class BrandEntity {
-    @Id
-    @GeneratedValue(strategy = IDENTITY)
-    private Long id;
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
+public class BrandEntity extends BaseEntity {
     private String name;
     private String description;
 
-    public BrandEntity(String name, String description) {
+    public BrandEntity(final String name, final String description) {
         this.name = name;
         this.description = description;
     }

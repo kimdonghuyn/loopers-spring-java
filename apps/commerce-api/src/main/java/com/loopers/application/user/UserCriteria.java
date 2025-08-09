@@ -1,7 +1,7 @@
 package com.loopers.application.user;
 
 import com.loopers.domain.user.UserCommand;
-import com.loopers.support.Gender;
+import com.loopers.support.enums.Gender;
 
 public class UserCriteria {
 

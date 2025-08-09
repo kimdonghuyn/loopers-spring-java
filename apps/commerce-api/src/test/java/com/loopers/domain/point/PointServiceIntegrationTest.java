@@ -2,15 +2,9 @@ package com.loopers.domain.point;
 
 import com.loopers.application.user.UserCriteria;
 import com.loopers.application.user.UserFacade;
-import com.loopers.domain.point.PointCommand;
-import com.loopers.domain.point.PointEntity;
-import com.loopers.domain.point.PointInfo;
-import com.loopers.domain.point.PointService;
-import com.loopers.domain.user.*;
-import com.loopers.interfaces.api.ApiResponse;
-import com.loopers.interfaces.api.point.PointV1Dto;
-import com.loopers.interfaces.api.user.UserV1Dto;
-import com.loopers.support.Gender;
+import com.loopers.domain.user.UserCommand;
+import com.loopers.domain.user.UserService;
+import com.loopers.support.enums.Gender;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
 import com.loopers.utils.DatabaseCleanUp;
@@ -20,7 +14,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.Optional;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -174,6 +171,57 @@ public class PointServiceIntegrationTest {
                 () -> assertThat(pointInfo).isNotNull(),
                 () -> assertThat(pointInfo.loginId().getLoginId()).isEqualTo("loopers123"),
                 () -> assertThat(pointInfo.amount()).isEqualTo(50L) // 초기 100 - 사용 50
+        );
+    }
+
+
+
+    @DisplayName("동일한 유저가 서로 다른 주문을 동시에 수행해도, 포인트가 정상적으로 차감되어야 한다.")
+    @Test
+    void usePointConcurrently() throws InterruptedException {
+        userService.signUp(
+                new UserCommand.SignUp(
+                        "loopers123",
+                        "hyun",
+                        "loopers@naver.com",
+                        "2002-10-10",
+                        Gender.M
+                ));
+
+        pointService.initPoint(new PointCommand.Init("loopers123", 500L));
+
+        int threads = 10;
+        long usePerOrder = 50L;
+
+        ExecutorService executor = java.util.concurrent.Executors.newFixedThreadPool(threads);
+        var start = new CountDownLatch(1);
+        CountDownLatch done = new CountDownLatch(threads);
+        List<Throwable> errors = Collections.synchronizedList(new java.util.ArrayList<>());
+
+        for (int i = 0; i < threads; i++) {
+            executor.submit(() -> {
+                try {
+                    start.await();
+                    pointService.use(new PointCommand.Use("loopers123", usePerOrder));
+                } catch (Throwable t) {
+                    errors.add(t);
+                } finally {
+                    done.countDown();
+                }
+            });
+        }
+
+        start.countDown();
+        done.await();
+        executor.shutdown();
+
+        assertThat(errors.isEmpty()).isTrue();
+
+        PointInfo pointInfo = pointService.get("loopers123");
+        assertAll(
+                () -> assertThat(pointInfo).isNotNull(),
+                () -> assertThat(pointInfo.loginId().getLoginId()).isEqualTo("loopers123"),
+                () -> assertThat(pointInfo.amount()).isEqualTo(0L)
         );
     }
 }

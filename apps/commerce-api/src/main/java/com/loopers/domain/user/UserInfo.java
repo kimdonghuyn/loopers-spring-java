@@ -1,6 +1,6 @@
 package com.loopers.domain.user;
 
-import com.loopers.support.Gender;
+import com.loopers.support.enums.Gender;
 
 public record UserInfo(
         Long userId,

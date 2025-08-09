@@ -1,4 +1,4 @@
-package com.loopers.support;
+package com.loopers.support.enums;
 
 public enum SortType {
     LATEST,

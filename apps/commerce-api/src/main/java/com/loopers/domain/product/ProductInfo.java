@@ -6,9 +6,8 @@ public record ProductInfo(
         String description,
         int price,
         int stock,
-        Long likeCount,
-        String brandName,
-        String brandDescription
+        Long brandId,
+        Long likeCount
 ) {
     public static ProductInfo from(final ProductWithLikeCount productWithLikeCount) {
         return new ProductInfo(
@@ -17,9 +16,8 @@ public record ProductInfo(
                 productWithLikeCount.product().getDescription(),
                 productWithLikeCount.product().getPrice(),
                 productWithLikeCount.product().getStock(),
-                productWithLikeCount.likeCount(),
-                productWithLikeCount.product().getBrand().getName(),
-                productWithLikeCount.product().getBrand().getDescription()
+                productWithLikeCount.product().getBrandId(),
+                productWithLikeCount.likeCount()
         );
     }
 }
