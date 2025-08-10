@@ -40,7 +40,12 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
-    public List<ProductWithLikeCount> findLikedProductsByLoginId(String loginId) {
-        return productJpaRepository.findLikedProductsByLoginId(loginId);
+    public Optional<ProductEntity> findByIdForUpdate(Long id) {
+        return productJpaRepository.findByIdForUpdate(id);
+    }
+
+    @Override
+    public List<ProductWithLikeCount> findLikedProductsByUserId(Long userId) {
+        return productJpaRepository.findLikedProductsByUserId(userId);
     }
 }

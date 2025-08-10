@@ -1,5 +1,6 @@
 package com.loopers.domain.user;
 
+import com.loopers.support.enums.Gender;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
 
@@ -10,7 +11,7 @@ public class UserValidator {
 
     public static void validateUserId(String userId) {
         if (userId == null || userId.isEmpty()) {
-            throw new CoreException(ErrorType.NOT_FOUND, "아이디는 필수 입력값입니다.");
+            throw new CoreException(ErrorType.BAD_REQUEST, "아이디는 필수 입력값입니다.");
         } else if (!userId.matches(PATTERN_USER_ID)) {
             throw new CoreException(ErrorType.BAD_REQUEST, "아이디는 영문 및 숫자 10자 이내로 입력해야 합니다.");
         }
@@ -23,6 +24,18 @@ public class UserValidator {
     public static void validateBirth(String birth) {
         if (birth == null || !birth.matches(PATTERN_BIRTH)) {
             throw new CoreException(ErrorType.BAD_REQUEST, "생년월일은 yyyy-mm-dd 형식으로 입력해야 합니다.");
+        }
+    }
+
+    public static void validateGender(Gender gender) {
+        if (gender == null) {
+            throw new CoreException(ErrorType.BAD_REQUEST, "성별은 필수 입력값입니다.");
+        }
+    }
+
+    public static void validateName(String name) {
+        if (name == null || name.isEmpty()) {
+            throw new CoreException(ErrorType.BAD_REQUEST, "이름은 필수 입력값입니다.");
         }
     }
 }

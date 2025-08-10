@@ -1,4 +1,4 @@
-package com.loopers.support;
+package com.loopers.support.enums;
 
 public enum OrderStatus {
     PENDING("주문 대기"),

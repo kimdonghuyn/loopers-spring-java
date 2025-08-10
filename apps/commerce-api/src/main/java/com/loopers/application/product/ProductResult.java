@@ -1,8 +1,7 @@
 package com.loopers.application.product;
 
+import com.loopers.domain.brand.BrandInfo;
 import com.loopers.domain.product.ProductInfo;
-import com.loopers.domain.user.UserInfo;
-import com.loopers.support.Gender;
 
 public record ProductResult(
         Long id,
@@ -11,10 +10,11 @@ public record ProductResult(
         int price,
         int stock,
         Long likeCount,
+        Long brandId,
         String brandName,
         String brandDescription
 ) {
-    public static ProductResult from(final ProductInfo productInfo) {
+    public static ProductResult from(final ProductInfo productInfo, final BrandInfo brandInfo) {
         return new ProductResult(
                 productInfo.id(),
                 productInfo.name(),
@@ -22,8 +22,9 @@ public record ProductResult(
                 productInfo.price(),
                 productInfo.stock(),
                 productInfo.likeCount(),
-                productInfo.brandName(),
-                productInfo.brandDescription()
+                brandInfo.id(),
+                brandInfo.name(),
+                brandInfo.description()
         );
     }
 }

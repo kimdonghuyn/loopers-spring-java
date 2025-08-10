@@ -1,44 +1,52 @@
 package com.loopers.domain.product;
 
-import com.loopers.domain.brand.BrandEntity;
+import com.loopers.domain.BaseEntity;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import static jakarta.persistence.GenerationType.*;
 
 @Entity
 @Table(name = "product")
 @Getter
-@NoArgsConstructor
-public class ProductEntity {
-
-    @Id
-    @GeneratedValue(strategy = IDENTITY)
-    private Long id;
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
+public class ProductEntity extends BaseEntity {
     private String name;
     private String description;
     private int price;
     private int stock;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ref_brand_id")
-    private BrandEntity brand;
+    private Long brandId;
 
     public ProductEntity(
             final String name,
             final String description,
             final int price,
             final int stock,
-            final BrandEntity brand
+            final Long brandId
     ) {
+        if (name == null) {
+            throw new IllegalArgumentException("상품 이름은 null일 수 없습니다.");
+        }
+        if (description == null) {
+            throw new IllegalArgumentException("상품 설명은 null일 수 없습니다.");
+        }
+        if (price <= 0) {
+            throw new IllegalArgumentException("상품 가격은 0 이하일 수 없습니다.");
+        }
+        if (stock < 0) {
+            throw new IllegalArgumentException("상품 재고는 음수일 수 없습니다.");
+        }
+        if (brandId == null) {
+            throw new IllegalArgumentException("브랜드는 null일 수 없습니다.");
+        }
+
         this.name = name;
         this.description = description;
         this.price = price;
         this.stock = stock;
-        this.brand = brand;
+        this.brandId = brandId;
     }
 
     public void increaseStock(int quantity) {

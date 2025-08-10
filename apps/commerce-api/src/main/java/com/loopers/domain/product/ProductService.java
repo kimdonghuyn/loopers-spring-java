@@ -2,7 +2,7 @@ package com.loopers.domain.product;
 
 import com.loopers.domain.brand.BrandEntity;
 import com.loopers.infrastructure.brand.BrandJpaRepository;
-import com.loopers.support.SortType;
+import com.loopers.support.enums.SortType;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,7 @@ public class ProductService {
                 command.description(),
                 command.price(),
                 command.stock(),
-                brand.get()
+                command.brandId()
         );
 
         return productRepository.save(product);
@@ -54,8 +54,9 @@ public class ProductService {
         return products.stream().map(ProductInfo::from).collect(Collectors.toList());
     }
 
+    @Transactional
     public void consume(ProductCommand.Consume command) {
-        Optional<ProductEntity> product = productRepository.findById(command.productId());
+        Optional<ProductEntity> product = productRepository.findByIdForUpdate(command.productId());
 
         if (product.isPresent()) {
             product.get().decreaseStock(command.quantity().getQuantity());
@@ -65,8 +66,8 @@ public class ProductService {
         }
     }
 
-    public List<ProductInfo> getLikedProducts(String loginId) {
-        List<ProductWithLikeCount> likedProducts = productRepository.findLikedProductsByLoginId(loginId);
+    public List<ProductInfo> getLikedProducts(Long userId) {
+        List<ProductWithLikeCount> likedProducts = productRepository.findLikedProductsByUserId(userId);
         return likedProducts.stream().map(ProductInfo::from).collect(Collectors.toList());
     }
 }

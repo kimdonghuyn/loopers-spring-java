@@ -2,7 +2,9 @@ package com.loopers.infrastructure.product;
 
 import com.loopers.domain.product.ProductEntity;
 import com.loopers.domain.product.ProductWithLikeCount;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -16,9 +18,8 @@ public interface ProductJpaRepository extends JpaRepository<ProductEntity, Long>
                     COUNT(l.id)
                 )
                 FROM ProductEntity p
-                JOIN FETCH p.brand b
                 LEFT JOIN LikeEntity l ON l.productId = p.id
-                GROUP BY p, b
+                GROUP BY p
                 ORDER BY
                     CASE WHEN :sortType = 'LATEST' THEN p.id END DESC,
                     CASE WHEN :sortType = 'PRICE_ASC' THEN p.price END ASC,
@@ -32,12 +33,20 @@ public interface ProductJpaRepository extends JpaRepository<ProductEntity, Long>
                     COUNT(l.id)
                 )
                 FROM ProductEntity p
-                JOIN FETCH p.brand b
                 LEFT JOIN LikeEntity l ON l.productId = p.id
                 WHERE p.id = :productId
-                GROUP BY p, b
+                GROUP BY p
             """)
     ProductWithLikeCount findProductById(@Param("productId") Long productId);
+
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+                SELECT p
+                FROM ProductEntity p
+                WHERE p.id = :productId
+            """)
+    Optional<ProductEntity> findByIdForUpdate(@Param("productId") Long productId);
 
     @Query("""
                 SELECT new com.loopers.domain.product.ProductWithLikeCount(
@@ -45,10 +54,9 @@ public interface ProductJpaRepository extends JpaRepository<ProductEntity, Long>
                     COUNT(l.id)
                 )
                 FROM ProductEntity p
-                JOIN FETCH p.brand b
                 LEFT JOIN LikeEntity l ON l.productId = p.id
                 WHERE p.id IN :productIds
-                GROUP BY p, b
+                GROUP BY p
             """)
     List<ProductWithLikeCount> findAllById(List<Long> productIds);
 
@@ -58,10 +66,8 @@ public interface ProductJpaRepository extends JpaRepository<ProductEntity, Long>
                     COUNT(l.id)
                 )
                 FROM ProductEntity p
-                JOIN FETCH p.brand b
-                LEFT JOIN LikeEntity l ON l.productId = p.id
-                WHERE l.userId.loginId = :loginId
-                GROUP BY p, b
+                JOIN LikeEntity l ON l.productId = p.id AND l.userId = :userId
+                GROUP BY p
             """)
-    List<ProductWithLikeCount> findLikedProductsByLoginId(@Param("loginId") String loginId);
+    List<ProductWithLikeCount> findLikedProductsByUserId(@Param("userId") Long userId);
 }

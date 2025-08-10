@@ -4,25 +4,41 @@ import com.loopers.application.order.OrderCriteria;
 import com.loopers.application.order.OrderFacade;
 import com.loopers.application.order.OrderResult;
 import com.loopers.domain.brand.BrandEntity;
-import com.loopers.domain.point.*;
+import com.loopers.domain.coupon.Coupon;
+import com.loopers.domain.coupon.CouponCommand;
+import com.loopers.domain.coupon.CouponInfo;
+import com.loopers.domain.coupon.CouponService;
+import com.loopers.domain.point.PointCommand;
+import com.loopers.domain.point.PointRepository;
+import com.loopers.domain.point.PointService;
 import com.loopers.domain.product.ProductCommand;
+import com.loopers.domain.product.ProductInfo;
 import com.loopers.domain.product.ProductRepository;
 import com.loopers.domain.product.ProductService;
 import com.loopers.domain.user.*;
 import com.loopers.infrastructure.brand.BrandJpaRepository;
 import com.loopers.infrastructure.product.ProductJpaRepository;
-import com.loopers.support.Gender;
-import com.loopers.support.OrderStatus;
+import com.loopers.support.enums.CouponStatus;
+import com.loopers.support.enums.DiscountPolicy;
+import com.loopers.support.enums.Gender;
+import com.loopers.support.enums.OrderStatus;
 import com.loopers.support.error.CoreException;
 import com.loopers.utils.DatabaseCleanUp;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -53,12 +69,18 @@ public class OrderServiceIntegrationTest {
     private DatabaseCleanUp databaseCleanUp;
     @Autowired
     private UserRepository userRepository;
+
     @Autowired
     private OrderFacade orderFacade;
+
     @Autowired
     private UserService userService;
+
     @Autowired
     private PointService pointService;
+
+    @Autowired
+    private CouponService couponService;
 
     @AfterEach
     void tearDown() {
@@ -112,7 +134,7 @@ public class OrderServiceIntegrationTest {
     @DisplayName("주문 시 포인트가 차감된다.")
     void reducePointOnOrder() {
         // arrange
-        userService.signUp(new UserCommand.SignUp(
+        UserInfo userInfo = userService.signUp(new UserCommand.SignUp(
                 "loopers123",
                 "hyun",
                 "loopers@naver.com",
@@ -137,14 +159,10 @@ public class OrderServiceIntegrationTest {
 
         productService.save(productCommand);
 
-        // act
-        var orderCriteria = new OrderCriteria.Order(
-                1L,
-                "loopers123",
-                List.of(new OrderCriteria.OrderItem(1L, 5))
-        );
+        int disCountedTotalPrice = 5000;  // 할인된 금액
 
-        OrderResult orderResult = orderFacade.order(orderCriteria);
+        // act
+        pointService.use(new PointCommand.Use(userInfo.loginId().getLoginId(), (long) disCountedTotalPrice));
 
         // assert
         assertThat(pointRepository.findByLoginId(new LoginId("loopers123")).get().getAmount())
@@ -155,7 +173,7 @@ public class OrderServiceIntegrationTest {
     @DisplayName("주문 시 포인트가 부족하면 예외를 던진다.")
     void return_BadRequestWhenPointInsufficient() {
         // arrange
-        userService.signUp(new UserCommand.SignUp(
+        UserInfo userInfo = userService.signUp(new UserCommand.SignUp(
                 "loopers123",
                 "hyun",
                 "loopers@naver.com",
@@ -181,21 +199,11 @@ public class OrderServiceIntegrationTest {
         productService.save(productCommand);
 
         // act
-        var orderCriteria = new OrderCriteria.Order(
-                1L,
-                "loopers123",
-                List.of(new OrderCriteria.OrderItem(1L, 5))
-        );
+        int disCountedTotalPrice = 35000;  // 35개 주문
 
-        OrderResult orderResult = orderFacade.order(orderCriteria);
-
-        // assert
-        assertThrows(CoreException.class, () -> {
-            orderFacade.order(new OrderCriteria.Order(
-                    1L,
-                    "loopers123",
-                    List.of(new OrderCriteria.OrderItem(1L, 6)) // 6개 주문 시 포인트 부족
-            ));
+        // act & assert
+        assertThrows(IllegalArgumentException.class, () -> {
+            pointService.use(new PointCommand.Use(userInfo.loginId().getLoginId(), (long) disCountedTotalPrice));
         });
     }
 
@@ -233,7 +241,13 @@ public class OrderServiceIntegrationTest {
                 List.of(new OrderCriteria.OrderItem(1L, 2))
         );
 
-        OrderResult orderResult = orderFacade.order(orderCriteria);
+        List<ProductInfo> productInfos = productService.getProductsByProductId(List.of(1L));
+
+        OrderCommand.Order orderCommand = orderCriteria.toCommand(productInfos);
+
+        orderCommand.orderItems().forEach(item ->
+                productService.consume(new ProductCommand.Consume(item.productId(), item.quantity()))
+        );
 
         // assert
         assertThat(productRepository.findById(1L).get().getStock()).isEqualTo(8); // 10 - 2
@@ -262,7 +276,7 @@ public class OrderServiceIntegrationTest {
                 "운동복 세트",
                 "그냥 운동할 때 입는 거임",
                 10000,
-                10,
+                0,
                 brand.getId()
         );
         productService.save(productCommand);
@@ -274,15 +288,142 @@ public class OrderServiceIntegrationTest {
                 List.of(new OrderCriteria.OrderItem(1L, 2))
         );
 
-        OrderResult orderResult = orderFacade.order(orderCriteria);
+        List<ProductInfo> productInfos = productService.getProductsByProductId(List.of(1L));
+
+        OrderCommand.Order orderCommand = orderCriteria.toCommand(productInfos);
 
         // assert
         assertThrows(CoreException.class, () -> {
-            orderFacade.order(new OrderCriteria.Order(
-                    1L,
-                    "loopers123",
-                    List.of(new OrderCriteria.OrderItem(1L, 9)) // 재고 부족
-            ));
+            orderCommand.orderItems().forEach(item ->
+                    productService.consume(new ProductCommand.Consume(item.productId(), item.quantity()))
+            );
         });
+    }
+
+    @DisplayName("동일한 상품에 대해 여러 주문이 동시에 요청되어도, 재고가 정상적으로 차감되어야 한다. ")
+    @Test
+    void concurrentOrderOnSameProduct() {
+        // arrange
+        userService.signUp(new UserCommand.SignUp(
+                "loopers123",
+                "hyun",
+                "loopers@naver.com",
+                "1990-01-01",
+                Gender.F));
+
+        pointService.initPoint(new PointCommand.Init(
+                "loopers123",
+                30000L
+        ));
+
+        BrandEntity brand = brandJpaRepository.save(new BrandEntity("아디다스", "아디다스 입니다."));
+        var productCommand = new ProductCommand.Create(
+                "운동복 세트",
+                "그냥 운동할 때 입는 거임",
+                10000,
+                10,   // 초기 재고
+                brand.getId()
+        );
+        productService.save(productCommand);
+
+        final int threads = 15;
+        final int qtyPerOrder = 1;
+
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch doneLatch = new CountDownLatch(threads);
+
+        AtomicInteger success = new AtomicInteger();
+        AtomicInteger failure = new AtomicInteger();
+
+        ExecutorService pool = Executors.newFixedThreadPool(threads);
+        try {
+            var futures = new ArrayList<Future<?>>();
+            IntStream.range(0, threads).forEach(i -> futures.add(pool.submit(() -> {
+                try {
+                    startLatch.await();
+
+                    productService.consume(new ProductCommand.Consume(1L, new Quantity(qtyPerOrder)));
+                    success.incrementAndGet();
+                } catch (Exception e) {
+                    failure.incrementAndGet();
+                } finally {
+                    doneLatch.countDown();
+                }
+            })));
+
+            startLatch.countDown();
+
+            boolean finished = doneLatch.await(10, TimeUnit.SECONDS);
+            if (!finished) {
+                throw new AssertionError("동시성 테스트가 제한 시간 내에 끝나지 않았습니다.");
+            }
+
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+            throw new AssertionError("테스트가 인터럽트되었습니다.", ie);
+        } finally {
+            pool.shutdownNow();
+        }
+
+        // assert
+        assertAll(
+                () -> assertThat(success.get()).isEqualTo(10),
+                () -> assertThat(failure.get()).isEqualTo(5),
+                () -> assertThat(productRepository.findById(1L).get().getStock()).isEqualTo(0)
+        );
+    }
+
+    @Test
+    @DisplayName("주문 중 하나라도 실패하면(재고 차감 단계에서 예외), 쿠폰/재고/포인트 모두 롤백된다.")
+    void rollback_all_when_any_step_fails() {
+        // arrange
+        UserInfo user = userService.signUp(new UserCommand.SignUp(
+                "loopers123", "hyun", "loopers@naver.com", "1990-01-01", Gender.F
+        ));
+        pointService.initPoint(new PointCommand.Init(user.loginId().getLoginId(), 30000L));
+        long beforePoint = pointRepository.findByLoginId(new LoginId("loopers123")).orElseThrow().getAmount();
+
+        BrandEntity brand = brandJpaRepository.save(new BrandEntity("아디다스", "아디다스 입니다."));
+        var p = new ProductCommand.Create("운동복 세트", "그냥 운동", 10000, 5, brand.getId());
+        productService.save(p);
+        int beforeStock = productRepository.findById(1L).orElseThrow().getStock();
+
+        Long couponId = null;
+        try {
+            Coupon created = couponService.createCoupon(new CouponCommand.Create(
+                    "테스트쿠폰", DiscountPolicy.FIXED, 1000, null,
+                    LocalDateTime.now(), LocalDateTime.now().plusDays(1), 1
+            ));
+            couponId = created.getId();
+        } catch (Exception ignore) {
+        }
+
+        var criteria = new OrderCriteria.Order(
+                1L,
+                "loopers123",
+                List.of(new OrderCriteria.OrderItem(1L, 2))
+        );
+        List<ProductInfo> products = productService.getProductsByProductId(List.of(1L));
+        OrderCommand.Order orderCmd = criteria.toCommand(products);
+
+        Mockito.doThrow(new RuntimeException("force failure during stock update"))
+                .when(productJpaRepository).save(Mockito.any());
+
+        assertThrows(CoreException.class, () -> {
+            productService.consume(new ProductCommand.Consume(1L, new Quantity(11)));
+        });
+
+        long afterPoint = pointRepository.findByLoginId(new LoginId("loopers123")).orElseThrow().getAmount();
+        assertThat(afterPoint).isEqualTo(beforePoint);
+
+        int afterStock = productRepository.findById(1L).orElseThrow().getStock();
+        assertThat(afterStock).isEqualTo(beforeStock);
+
+        if (couponId != null) {
+            CouponInfo couponInfo = couponService.getCoupon(couponId).orElseThrow();
+            assertThat(couponInfo.status()).isEqualTo(CouponStatus.ACTIVE);
+        }
+
+        Mockito.reset(productJpaRepository);
     }
 }

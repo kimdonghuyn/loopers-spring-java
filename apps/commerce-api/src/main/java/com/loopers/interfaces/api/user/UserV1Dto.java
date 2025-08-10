@@ -2,7 +2,7 @@ package com.loopers.interfaces.api.user;
 
 import com.loopers.application.user.UserCriteria;
 import com.loopers.application.user.UserResult;
-import com.loopers.support.Gender;
+import com.loopers.support.enums.Gender;
 import jakarta.validation.constraints.NotNull;
 
 public class UserV1Dto {
