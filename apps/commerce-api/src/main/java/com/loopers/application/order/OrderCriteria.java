@@ -5,6 +5,7 @@ import com.loopers.domain.order.Quantity;
 import com.loopers.domain.payment.PaymentCommand;
 import com.loopers.domain.product.ProductInfo;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,7 +40,7 @@ public class OrderCriteria {
             Long userId,
             int totalPrice
     ) {
-        public static PaymentCommand.Payment toCommand(Long userId, int totalPrice) {
+        public static PaymentCommand.Payment toCommand(Long userId, BigDecimal totalPrice) {
             return new PaymentCommand.Payment(userId, totalPrice);
         }
     }

@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,8 +42,8 @@ public class ProductFacadeTest {
     @BeforeEach
     void setUp() {
         brandRepository.save(new BrandEntity("브랜드1", "브랜드 설명"));
-        productRepository.save(new ProductEntity("상품1", "설명1", 5000, 5, 1L));
-        productRepository.save(new ProductEntity("상품2", "설명2", 10000, 10, 1L));
+        productRepository.save(new ProductEntity("상품1", "설명1", BigDecimal.valueOf(5000), 5, 1L));
+        productRepository.save(new ProductEntity("상품2", "설명2", BigDecimal.valueOf(10000), 10, 1L));
     }
 
     @AfterEach

@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -227,13 +228,13 @@ public class CouponServiceIntegrationTest {
             Coupon coupon = couponService.createCoupon(createCommand);
 
             // act
-            int discountedPrice = couponService.calculateDiscountPrice(
-                    List.of(1000),
+            BigDecimal discountedPrice = couponService.calculateDiscountPrice(
+                    List.of(BigDecimal.valueOf(1000)),
                     1L
             );
 
             // assert
-            assertThat(discountedPrice).isEqualTo(0);
+            assertThat(discountedPrice).isEqualByComparingTo(BigDecimal.ZERO);
         }
 
         @DisplayName("만료된 쿠폰이 주어지면, 예외를 발생시킨다.")
@@ -252,7 +253,7 @@ public class CouponServiceIntegrationTest {
 
             // act & assert
             CoreException ex = assertThrows(CoreException.class, () ->
-                    couponService.calculateDiscountPrice(List.of(5000), coupon.getId())
+                    couponService.calculateDiscountPrice(List.of(BigDecimal.valueOf(5000)), coupon.getId())
             );
             assertThat(ex.getErrorType()).isEqualTo(ErrorType.BAD_REQUEST);
             assertThat(ex.getMessage()).isEqualTo("사용기한이 지난 쿠폰입니다.");
@@ -292,7 +293,7 @@ public class CouponServiceIntegrationTest {
                         ready.countDown();
                         start.await();
                         try {
-                            couponService.calculateDiscountPrice(List.of(5000), couponId);
+                            couponService.calculateDiscountPrice(List.of(BigDecimal.valueOf(5000)), couponId);
                             success.incrementAndGet();
                         } catch (Exception e) {
                             fail.incrementAndGet();

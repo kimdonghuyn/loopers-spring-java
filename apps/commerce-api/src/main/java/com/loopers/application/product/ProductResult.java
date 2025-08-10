@@ -3,11 +3,13 @@ package com.loopers.application.product;
 import com.loopers.domain.brand.BrandInfo;
 import com.loopers.domain.product.ProductInfo;
 
+import java.math.BigDecimal;
+
 public record ProductResult(
         Long id,
         String name,
         String description,
-        int price,
+        BigDecimal price,
         int stock,
         Long likeCount,
         Long brandId,

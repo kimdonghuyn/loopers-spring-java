@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,16 +48,18 @@ public class OrderFacade {
         List<ProductInfo> productInfos = productService.getProductsByProductId(productIds);
 
         // 쿠폰 적용
-        List<Integer> productPrices = productInfos.stream()
+        List<BigDecimal> productPrices = productInfos.stream()
                 .map(ProductInfo::price)
                 .toList();
 
-        int totalPrice = productPrices.stream().mapToInt(Integer::intValue).sum();
+        BigDecimal totalPrice = productPrices.stream()
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(0, BigDecimal.ROUND_DOWN);
 
         UserCouponInfo userCouponInfo = userCouponService.getUserCoupon(new UserCouponCommand.GetUserCoupon(userResult.id()));
 
         // 할인 금액 계산
-        int discountedTotalPrice = couponService.calculateDiscountPrice(productPrices, userCouponInfo.couponId());
+        BigDecimal discountedTotalPrice = couponService.calculateDiscountPrice(productPrices, userCouponInfo.couponId());
 
         // 결제 처리 (외부 결제 시스템)
         OrderStatus orderStatus = paymentService.pay(OrderCriteria.Payment.toCommand(userResult.id(), discountedTotalPrice));
@@ -65,7 +68,7 @@ public class OrderFacade {
         OrderInfo orderInfo = orderService.order(orderCommand);
 
         // 포인트 차감
-        pointService.use(new PointCommand.Use(orderCriteria.loginId(), (long) discountedTotalPrice));
+        pointService.use(new PointCommand.Use(orderCriteria.loginId(), discountedTotalPrice));
 
         // 재고 차감
         orderCommand.orderItems().forEach(item ->

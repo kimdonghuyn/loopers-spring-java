@@ -1,10 +1,12 @@
 package com.loopers.domain.product;
 
+import java.math.BigDecimal;
+
 public record ProductInfo(
         Long id,
         String name,
         String description,
-        int price,
+        BigDecimal price,
         int stock,
         Long brandId,
         Long likeCount

@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,9 +42,9 @@ public class OrderEntity extends BaseEntity {
         this.status = status;
     }
 
-    public int calculateTotalPrice() {
+    public BigDecimal calculateTotalPrice() {
         return orderItems.stream()
-                .mapToInt(OrderItemEntity::calculateTotalPrice)
-                .sum();
+                .map(OrderItemEntity::calculateTotalPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }

@@ -4,12 +4,14 @@ import com.loopers.application.point.PointCriteria;
 import com.loopers.application.point.PointResult;
 import jakarta.validation.constraints.NotNull;
 
+import java.math.BigDecimal;
+
 public class PointV1Dto {
 
     public record ChargeRequest(
             @NotNull
             String loginId,
-            Long amount
+            BigDecimal amount
     ) {
         public PointCriteria.Charge  toCriteria(PointV1Dto.ChargeRequest request) {
             return new PointCriteria.Charge(request.loginId(), request.amount());
@@ -19,7 +21,7 @@ public class PointV1Dto {
     public record GetResponse(
             Long id,
             String loginId,
-            Long amount
+            BigDecimal amount
     ) {
         public static PointV1Dto.GetResponse from(PointResult info) {
             return new PointV1Dto.GetResponse(

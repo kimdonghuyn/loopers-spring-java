@@ -2,6 +2,7 @@ package com.loopers.domain.order;
 
 import com.loopers.support.enums.OrderStatus;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public record OrderInfo(
@@ -9,7 +10,7 @@ public record OrderInfo(
         Long userId,
         OrderStatus status,
         List<OrderItemEntity> orderItems,
-        int totalPrice
+        BigDecimal totalPrice
 ) {
     public static OrderInfo from(OrderEntity orderEntity) {
         return new OrderInfo(

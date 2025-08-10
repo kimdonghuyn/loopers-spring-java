@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 
 @Getter
 @Entity
@@ -21,9 +23,9 @@ public class OrderItemEntity extends BaseEntity {
     @Embedded
     private Quantity quantity;
 
-    private int price;
+    private BigDecimal price;
 
-    public OrderItemEntity(Long productId, Quantity quantity, int price) {
+    public OrderItemEntity(Long productId, Quantity quantity, BigDecimal price) {
         if (productId == null) {
             throw new IllegalArgumentException("productId는 null일 수 없습니다.");
         }
@@ -32,7 +34,7 @@ public class OrderItemEntity extends BaseEntity {
             throw new IllegalArgumentException("quantity는 null이거나 0 이하일 수 없습니다.");
         }
 
-        if (price <= 0) {
+        if (price == null || price.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("price는 0 이하일 수 없습니다.");
         }
 
@@ -41,7 +43,7 @@ public class OrderItemEntity extends BaseEntity {
         this.price = price;
     }
 
-    public int calculateTotalPrice() {
-        return this.quantity.getQuantity() * this.price;
+    public BigDecimal calculateTotalPrice() {
+        return price.multiply(BigDecimal.valueOf(quantity.getQuantity()));
     }
 }

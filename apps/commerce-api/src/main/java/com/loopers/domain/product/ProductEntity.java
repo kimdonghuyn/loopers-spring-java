@@ -8,6 +8,8 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "product")
 @Getter
@@ -15,14 +17,14 @@ import lombok.NoArgsConstructor;
 public class ProductEntity extends BaseEntity {
     private String name;
     private String description;
-    private int price;
+    private BigDecimal price;
     private int stock;
     private Long brandId;
 
     public ProductEntity(
             final String name,
             final String description,
-            final int price,
+            final BigDecimal price,
             final int stock,
             final Long brandId
     ) {
@@ -32,8 +34,8 @@ public class ProductEntity extends BaseEntity {
         if (description == null) {
             throw new IllegalArgumentException("상품 설명은 null일 수 없습니다.");
         }
-        if (price <= 0) {
-            throw new IllegalArgumentException("상품 가격은 0 이하일 수 없습니다.");
+        if (price == null || price.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("상품 가격은 0보다 커야 합니다.");
         }
         if (stock < 0) {
             throw new IllegalArgumentException("상품 재고는 음수일 수 없습니다.");

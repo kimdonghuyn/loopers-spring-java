@@ -1,19 +1,21 @@
 package com.loopers.domain.point;
 
+import java.math.BigDecimal;
+
 public class PointCommand {
 
     public record Init(
             String loginId,
-            Long amount
+            BigDecimal amount
     ) {}
 
     public record Charge(
             String loginId,
-            Long amount
+            BigDecimal amount
     ) {}
 
     public record Use(
             String loginId,
-            Long amount
+            BigDecimal amount
     ){}
 }

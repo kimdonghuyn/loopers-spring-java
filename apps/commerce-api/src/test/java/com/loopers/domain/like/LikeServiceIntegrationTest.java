@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -62,7 +63,7 @@ public class LikeServiceIntegrationTest {
         productRepository.save(new ProductEntity(
                         "아디다스 운동화",
                         "운동할 때 신는 운동화임",
-                        10000,
+                        BigDecimal.valueOf(10000),
                         10,
                         savedBrand.getId()
                 )
