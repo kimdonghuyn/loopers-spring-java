@@ -281,7 +281,7 @@ public class CouponServiceIntegrationTest {
             ExecutorService pool = Executors.newFixedThreadPool(threads);
             CountDownLatch ready = new CountDownLatch(threads);
             CountDownLatch start = new CountDownLatch(1);
-            CountDownLatch done = new CountDownLatch(threads);
+            CountDownLatch latch = new CountDownLatch(threads);
             AtomicInteger success = new AtomicInteger(0);
             AtomicInteger fail = new AtomicInteger(0);
             CopyOnWriteArrayList<Throwable> errors = new CopyOnWriteArrayList<>();
@@ -302,7 +302,7 @@ public class CouponServiceIntegrationTest {
                     } catch (InterruptedException ie) {
                         Thread.currentThread().interrupt();
                     } finally {
-                        done.countDown();
+                        latch.countDown();
                     }
                 });
             }
@@ -311,7 +311,7 @@ public class CouponServiceIntegrationTest {
                 throw new IllegalStateException("Threads not ready in time");
             }
             start.countDown();
-            done.await(15, TimeUnit.SECONDS);
+            latch.await(15, TimeUnit.SECONDS);
             pool.shutdownNow();
 
             // assert

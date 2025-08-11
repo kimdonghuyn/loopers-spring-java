@@ -196,7 +196,7 @@ public class PointServiceIntegrationTest {
 
         ExecutorService executor = java.util.concurrent.Executors.newFixedThreadPool(threads);
         var start = new CountDownLatch(1);
-        CountDownLatch done = new CountDownLatch(threads);
+        CountDownLatch latch = new CountDownLatch(threads);
         List<Throwable> errors = Collections.synchronizedList(new java.util.ArrayList<>());
 
         for (int i = 0; i < threads; i++) {
@@ -207,13 +207,13 @@ public class PointServiceIntegrationTest {
                 } catch (Throwable t) {
                     errors.add(t);
                 } finally {
-                    done.countDown();
+                    latch.countDown();
                 }
             });
         }
 
         start.countDown();
-        done.await();
+        latch.await();
         executor.shutdown();
 
         assertThat(errors.isEmpty()).isTrue();
