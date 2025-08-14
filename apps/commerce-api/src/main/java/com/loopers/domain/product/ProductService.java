@@ -1,11 +1,10 @@
 package com.loopers.domain.product;
 
-import com.loopers.domain.brand.BrandEntity;
-import com.loopers.infrastructure.brand.BrandJpaRepository;
 import com.loopers.support.enums.SortType;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,11 +16,8 @@ import java.util.stream.Collectors;
 @Service
 public class ProductService {
     private final ProductRepository productRepository;
-    private final BrandJpaRepository brandJpaRepository;
 
     public ProductEntity save(final ProductCommand.Create command) {
-        Optional<BrandEntity> brand = brandJpaRepository.findById(command.brandId());
-
         final ProductEntity product = new ProductEntity(
                 command.name(),
                 command.description(),
@@ -35,6 +31,14 @@ public class ProductService {
 
     public List<ProductInfo> getProducts(SortType sortType) {
         List<ProductWithLikeCount> products = productRepository.findAllOrderBySortType(sortType.name());
+        return products.stream().map(ProductInfo::from).collect(Collectors.toList());
+    }
+
+    public List<ProductInfo> getProductsByBrandId(Long brandId, Pageable pageable) {
+        List<ProductWithLikeCount> products = productRepository.findAllByBrandId(brandId, pageable);
+        if (products.isEmpty()) {
+            throw new CoreException(ErrorType.NOT_FOUND, "해당 브랜드의 상품이 존재하지 않습니다.");
+        }
         return products.stream().map(ProductInfo::from).collect(Collectors.toList());
     }
 

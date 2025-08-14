@@ -38,6 +38,15 @@ public class ProductFacade {
     }
 
     @Transactional(readOnly = true)
+    public List<Optional<ProductResult>> getProductsByBrandId(ProductQuery.GetProductsByBrandId query) {
+        List<ProductInfo> products = productService.getProductsByBrandId(query.brandId(), query.pageable());
+
+        Map<Long, Optional<BrandInfo>> brandMap = getBrandMap(products);
+
+        return mergeProductAndBrand(products, brandMap);
+    }
+
+    @Transactional(readOnly = true)
     public Optional<ProductResult> getProduct(Long productId) {
         ProductInfo product = productService.getProduct(productId);
         Optional<BrandInfo> brandInfo = brandService.getBrandInfo(product.brandId());

@@ -20,6 +20,7 @@ public class ProductEntity extends BaseEntity {
     private BigDecimal price;
     private int stock;
     private Long brandId;
+    private Integer likeCount = 0;
 
     public ProductEntity(
             final String name,

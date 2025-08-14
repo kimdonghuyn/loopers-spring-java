@@ -3,6 +3,7 @@ package com.loopers.infrastructure.product;
 import com.loopers.domain.product.ProductEntity;
 import com.loopers.domain.product.ProductWithLikeCount;
 import jakarta.persistence.LockModeType;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -70,4 +71,16 @@ public interface ProductJpaRepository extends JpaRepository<ProductEntity, Long>
                 GROUP BY p
             """)
     List<ProductWithLikeCount> findLikedProductsByUserId(@Param("userId") Long userId);
+
+    @Query("""
+                SELECT new com.loopers.domain.product.ProductWithLikeCount(
+                    p,
+                    COUNT(l.id)
+                )
+                FROM ProductEntity p
+                LEFT JOIN LikeEntity l ON l.productId = p.id
+                WHERE p.brandId = :brandId
+                GROUP BY p
+            """)
+    List<ProductWithLikeCount> findAllByBrandId(@Param("brandId") Long brandId, Pageable pageable);
 }
