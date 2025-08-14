@@ -52,6 +52,22 @@ public class ProductEntity extends BaseEntity {
         this.brandId = brandId;
     }
 
+    public ProductEntity(String name, String description, BigDecimal price, int stock, Long brandId, Integer likeCount) {
+        this(name, description, price, stock, brandId);
+        this.likeCount = likeCount != null ? likeCount : 0;
+    }
+
+    public static ProductEntity create(
+            final String name,
+            final String description,
+            final BigDecimal price,
+            final int stock,
+            final Long brandId,
+            final Integer likeCount
+    ) {
+        return new ProductEntity(name, description, price, stock, brandId, likeCount);
+    }
+
     public void increaseStock(int quantity) {
         if (quantity <= 0) {
             throw new CoreException(ErrorType.BAD_REQUEST, "추가할 재고 수량은 0보다 커야 합니다.");

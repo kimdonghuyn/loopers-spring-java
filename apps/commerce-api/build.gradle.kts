@@ -15,4 +15,7 @@ dependencies {
 
     // test-fixtures
     testImplementation(testFixtures(project(":modules:jpa")))
+
+    // DataFaker
+    implementation("net.datafaker:datafaker:2.4.4")
 }

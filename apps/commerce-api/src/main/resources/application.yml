@@ -55,3 +55,11 @@ spring:
 springdoc:
   api-docs:
     enabled: false
+
+---
+seed:
+  enabled: true
+  drop-and-reseed: true   # 한번 싹 비우고 다시 넣고 싶을 때만 true
+  brands: 100
+  products: 100000
+  batch-size: 1000
