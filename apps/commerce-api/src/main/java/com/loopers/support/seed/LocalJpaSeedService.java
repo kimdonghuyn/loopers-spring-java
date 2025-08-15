@@ -22,8 +22,8 @@ public class LocalJpaSeedService {
     @PersistenceContext
     private final EntityManager em;
 
-    @Value("${seed.enabled:true}")       private boolean enabled;
-    @Value("${seed.drop-and-reseed:true}") private boolean dropAndReseed;
+    @Value("${seed.enabled:false}")       private boolean enabled;
+    @Value("${seed.drop-and-reseed:false}") private boolean dropAndReseed;
 
     @Value("${seed.brands:100}")        private int brands;
     @Value("${seed.products:100000}")   private int products;
