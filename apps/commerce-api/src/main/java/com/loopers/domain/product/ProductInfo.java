@@ -9,7 +9,7 @@ public record ProductInfo(
         BigDecimal price,
         int stock,
         Long brandId,
-        Long likeCount
+        int likeCount
 ) {
     public static ProductInfo from(final ProductWithLikeCount productWithLikeCount) {
         return new ProductInfo(
@@ -19,7 +19,19 @@ public record ProductInfo(
                 productWithLikeCount.product().getPrice(),
                 productWithLikeCount.product().getStock(),
                 productWithLikeCount.product().getBrandId(),
-                productWithLikeCount.likeCount()
+                Math.toIntExact(productWithLikeCount.likeCount())
+        );
+    }
+
+    public static  ProductInfo from(final ProductEntity product) {
+        return new ProductInfo(
+                product.getId(),
+                product.getName(),
+                product.getDescription(),
+                product.getPrice(),
+                product.getStock(),
+                product.getBrandId(),
+                product.getLikeCount()
         );
     }
 }

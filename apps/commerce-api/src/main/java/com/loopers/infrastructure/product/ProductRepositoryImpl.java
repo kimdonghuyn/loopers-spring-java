@@ -2,6 +2,7 @@ package com.loopers.infrastructure.product;
 
 import com.loopers.domain.product.ProductEntity;
 import com.loopers.domain.product.ProductRepository;
+import com.loopers.domain.product.ProductWithBrand;
 import com.loopers.domain.product.ProductWithLikeCount;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +27,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
-    public List<ProductWithLikeCount> findAllByBrandId(Long brandId, Pageable pageable) {
+    public List<ProductWithBrand> findAllByBrandId(Long brandId, Pageable pageable) {
         return productJpaRepository.findAllByBrandId(brandId, pageable);
     }
 

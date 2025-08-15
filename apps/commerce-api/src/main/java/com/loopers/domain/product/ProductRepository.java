@@ -12,7 +12,7 @@ public interface ProductRepository {
 
     List<ProductWithLikeCount> findAllOrderBySortType(String sortType);
 
-    List<ProductWithLikeCount> findAllByBrandId(Long brandId, Pageable pageable);
+    List<ProductWithBrand> findAllByBrandId(Long brandId, Pageable pageable);
 
     List<ProductWithLikeCount> findAllById(List<Long> productIds);
 

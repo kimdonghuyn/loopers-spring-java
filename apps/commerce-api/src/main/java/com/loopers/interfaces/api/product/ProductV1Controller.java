@@ -5,12 +5,14 @@ import com.loopers.interfaces.api.ApiResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@Controller
+@RestController
 @RequestMapping("/api/v1/products")
 public class ProductV1Controller implements ProductV1ApiSpec{
     private final ProductFacade productFacade;
@@ -20,8 +22,9 @@ public class ProductV1Controller implements ProductV1ApiSpec{
     }
 
     @Override
+    @GetMapping("")
     public ApiResponse<List<ProductV1Dto.GetProductsResponse>> getProductsByBrandId(
-            Long brandId,
+            @RequestParam Long brandId,
             @PageableDefault(size = 20, sort = {"likeCount", "id", "price"}, direction = Sort.Direction.DESC)
             Pageable pageable
     ) {

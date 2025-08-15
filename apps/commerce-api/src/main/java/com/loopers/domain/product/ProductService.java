@@ -34,12 +34,12 @@ public class ProductService {
         return products.stream().map(ProductInfo::from).collect(Collectors.toList());
     }
 
-    public List<ProductInfo> getProductsByBrandId(Long brandId, Pageable pageable) {
-        List<ProductWithLikeCount> products = productRepository.findAllByBrandId(brandId, pageable);
+    public List<ProductWithBrand> getProductsByBrandId(Long brandId, Pageable pageable) {
+        List<ProductWithBrand> products = productRepository.findAllByBrandId(brandId, pageable);
         if (products.isEmpty()) {
             throw new CoreException(ErrorType.NOT_FOUND, "해당 브랜드의 상품이 존재하지 않습니다.");
         }
-        return products.stream().map(ProductInfo::from).collect(Collectors.toList());
+        return products;
     }
 
     public ProductInfo getProduct(final Long productId) {

@@ -3,6 +3,7 @@ package com.loopers.interfaces.api.product;
 import com.loopers.application.product.ProductQuery;
 import com.loopers.application.product.ProductResult;
 import com.loopers.domain.product.ProductEntity;
+import com.loopers.domain.product.ProductWithBrand;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
@@ -31,25 +32,23 @@ public class ProductV1Dto {
             String description,
             BigDecimal price,
             int stock,
-            Long likeCount,
+            int likeCount,
             Long brandId,
             String brandName,
             String brandDescription
     ) {
-        public static List<GetProductsResponse> from(final List<Optional<ProductResult>> productResult) {
+        public static List<GetProductsResponse> from(final List<ProductWithBrand> productResult) {
             return productResult.stream()
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .map(product -> new GetProductsResponse(
-                            product.id(),
-                            product.name(),
-                            product.description(),
-                            product.price(),
-                            product.stock(),
-                            product.likeCount(),
-                            product.brandId(),
-                            product.brandName(),
-                            product.brandDescription()
+                    .map(productWithBrand -> new GetProductsResponse(
+                            productWithBrand.product().getId(),
+                            productWithBrand.product().getName(),
+                            productWithBrand.product().getDescription(),
+                            productWithBrand.product().getPrice(),
+                            productWithBrand.product().getStock(),
+                            Math.toIntExact(productWithBrand.product().getLikeCount()),
+                            productWithBrand.brand().getId(),
+                            productWithBrand.brand().getName(),
+                            productWithBrand.brand().getDescription()
                     ))
                     .toList();
         }

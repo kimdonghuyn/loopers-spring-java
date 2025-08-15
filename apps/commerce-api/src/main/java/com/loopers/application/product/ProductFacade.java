@@ -5,6 +5,7 @@ import com.loopers.domain.brand.BrandService;
 import com.loopers.domain.product.ProductEntity;
 import com.loopers.domain.product.ProductInfo;
 import com.loopers.domain.product.ProductService;
+import com.loopers.domain.product.ProductWithBrand;
 import com.loopers.support.enums.SortType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -38,12 +39,10 @@ public class ProductFacade {
     }
 
     @Transactional(readOnly = true)
-    public List<Optional<ProductResult>> getProductsByBrandId(ProductQuery.GetProductsByBrandId query) {
-        List<ProductInfo> products = productService.getProductsByBrandId(query.brandId(), query.pageable());
+    public List<ProductWithBrand> getProductsByBrandId(ProductQuery.GetProductsByBrandId query) {
+        List<ProductWithBrand> products = productService.getProductsByBrandId(query.brandId(), query.pageable());
 
-        Map<Long, Optional<BrandInfo>> brandMap = getBrandMap(products);
-
-        return mergeProductAndBrand(products, brandMap);
+        return products;
     }
 
     @Transactional(readOnly = true)

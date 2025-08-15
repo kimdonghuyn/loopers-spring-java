@@ -11,7 +11,7 @@ public record ProductResult(
         String description,
         BigDecimal price,
         int stock,
-        Long likeCount,
+        int likeCount,
         Long brandId,
         String brandName,
         String brandDescription
