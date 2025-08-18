@@ -15,11 +15,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.IntConsumer;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -62,7 +66,7 @@ public class LikeServiceIntegrationTest {
         productRepository.save(new ProductEntity(
                         "아디다스 운동화",
                         "운동할 때 신는 운동화임",
-                        10000,
+                        BigDecimal.valueOf(10000),
                         10,
                         savedBrand.getId()
                 )
@@ -115,84 +119,72 @@ public class LikeServiceIntegrationTest {
     @Test
     @DisplayName("동일한 상품에 대해 여러명이 좋아요/싫어요를 요청해도, 상품의 좋아요 개수가 정상 반영되어야 한다.")
     void likeAndUnlikeByMultipleUsers() throws Exception {
-        // arrange: 유저 10명 생성/저장
-        List<UserEntity> users = List.of(
-                new UserEntity(new LoginId("user1"), "User One",  new Email("user1@loopers.com"), new Birth("2000-01-01"), Gender.F),
-                new UserEntity(new LoginId("user2"), "User Two",  new Email("user2@loopers.com"), new Birth("2000-01-02"), Gender.F),
-                new UserEntity(new LoginId("user3"), "User Three",new Email("user3@loopers.com"), new Birth("2000-01-03"), Gender.F),
-                new UserEntity(new LoginId("user4"), "User Four", new Email("user4@loopers.com"), new Birth("2000-01-04"), Gender.F),
-                new UserEntity(new LoginId("user5"), "User Five", new Email("user5@loopers.com"), new Birth("2000-01-05"), Gender.F),
-                new UserEntity(new LoginId("user6"), "User Six",  new Email("user6@loopers.com"), new Birth("2000-01-06"), Gender.F),
-                new UserEntity(new LoginId("user7"), "User Seven",new Email("user7@loopers.com"), new Birth("2000-01-07"), Gender.F),
-                new UserEntity(new LoginId("user8"), "User Eight",new Email("user8@loopers.com"), new Birth("2000-01-08"), Gender.F),
-                new UserEntity(new LoginId("user9"), "User Nine", new Email("user9@loopers.com"), new Birth("2000-01-09"), Gender.F),
-                new UserEntity(new LoginId("user10"),"User Ten",  new Email("user10@loopers.com"),new Birth("2000-01-10"), Gender.F)
-        );
-        List<UserEntity> savedUsers = users.stream()
-                .map(userRepository::save)
-                .toList();
+        // arrange
+        // arrange
+        List<UserEntity> savedUsers = new ArrayList<>();
+        for (int i = 1; i <= 10; i++) {
+            UserEntity userEntity = new UserEntity(
+                    new LoginId("user" + i),
+                    "User " + (i == 10 ? "Ten" : " " + i),
+                    new Email("user" + i + "@loopers.com"),
+                    new Birth("2000-01-" + String.format("%02d", i)),
+                    Gender.F
+            );
+            savedUsers.add(userRepository.save(userEntity));
+        }
 
-        // 테스트용 상품 조회 (기존 테스트 스타일 유지)
         ProductEntity savedProduct = productRepository.findAllById(List.of(1L)).get(0).product();
         Long productId = savedProduct.getId();
 
-        // act 1: 10명이 동시에 좋아요
-        int threads1 = savedUsers.size();
-        ExecutorService pool1 = Executors.newFixedThreadPool(threads1);
-        CountDownLatch ready1 = new CountDownLatch(threads1);
-        CountDownLatch start1 = new CountDownLatch(1);
-        CountDownLatch done1 = new CountDownLatch(threads1);
+        // act 1: 좋아요 10명 동시
+        runConcurrent(savedUsers.size(),
+                userIdx -> likeService.like(new LikeCommand.Like(savedUsers.get(userIdx).getId(), productId))
+        );
 
-        for (UserEntity u : savedUsers) {
-            pool1.submit(() -> {
-                try {
-                    ready1.countDown();
-                    start1.await();
-                    likeService.like(new LikeCommand.Like(u.getId(), productId));
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                } finally {
-                    done1.countDown();
-                }
-            });
+        // then 1
+        assertThat(productRepository.findDetailById(productId).likeCount()).isEqualTo(10);
+
+        // act 2: 싫어요 3명 동시
+        runConcurrent(3,
+                userIdx -> likeService.unlike(new LikeCommand.Like(savedUsers.get(userIdx).getId(), productId))
+        );
+
+        // then 2
+        assertThat(productRepository.findDetailById(productId).likeCount()).isEqualTo(7);
+    }
+
+    /**
+     * 지정된 개수의 쓰레드를 동시에 시작시켜 작업을 실행한다.
+     * @param threads 쓰레드 수
+     * @param task    인덱스를 인자로 받는 작업
+     */
+    private void runConcurrent(int threads, IntConsumer task) throws InterruptedException {
+        ExecutorService pool = Executors.newFixedThreadPool(threads);
+        CountDownLatch readyLatch = new CountDownLatch(threads);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch doneLatch  = new CountDownLatch(threads);
+
+        IntStream.range(0, threads).forEach(i ->
+                pool.submit(() -> {
+                    try {
+                        readyLatch.countDown();
+                        startLatch.await();
+                        task.accept(i);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    } finally {
+                        doneLatch.countDown();
+                    }
+                })
+        );
+
+        if (!readyLatch.await(5, TimeUnit.SECONDS)) {
+            throw new IllegalStateException("Threads not ready in time");
         }
-        if (!ready1.await(5, TimeUnit.SECONDS)) throw new IllegalStateException("Phase1 threads not ready");
-        start1.countDown();
-        done1.await(10, TimeUnit.SECONDS);
-        pool1.shutdownNow();
-
-        // then 1: 좋아요 수 = 10
-        ProductWithLikeCount afterLike = productRepository.findDetailById(productId);
-        assertThat(afterLike.likeCount()).isEqualTo(10);
-
-        // act 2: 3명이 동시에 싫어요(취소) — user1, user2, user3
-        List<UserEntity> toUnlike = savedUsers.subList(0, 3);
-        int threads2 = toUnlike.size();
-        ExecutorService pool2 = Executors.newFixedThreadPool(threads2);
-        CountDownLatch ready2 = new CountDownLatch(threads2);
-        CountDownLatch start2 = new CountDownLatch(1);
-        CountDownLatch done2 = new CountDownLatch(threads2);
-
-        for (UserEntity u : toUnlike) {
-            pool2.submit(() -> {
-                try {
-                    ready2.countDown();
-                    start2.await();
-                    likeService.unlike(new LikeCommand.Like(u.getId(), productId));
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                } finally {
-                    done2.countDown();
-                }
-            });
+        startLatch.countDown();
+        if (!doneLatch.await(10, TimeUnit.SECONDS)) {
+            throw new IllegalStateException("Tasks did not finish in time");
         }
-        if (!ready2.await(5, TimeUnit.SECONDS)) throw new IllegalStateException("Phase2 threads not ready");
-        start2.countDown();
-        done2.await(10, TimeUnit.SECONDS);
-        pool2.shutdownNow();
-
-        // then 2: 최종 좋아요 수 = 10 - 3 = 7
-        ProductWithLikeCount afterUnlike = productRepository.findDetailById(productId);
-        assertThat(afterUnlike.likeCount()).isEqualTo(7);
+        pool.shutdownNow();
     }
 }

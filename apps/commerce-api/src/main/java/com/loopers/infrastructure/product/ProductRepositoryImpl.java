@@ -2,8 +2,10 @@ package com.loopers.infrastructure.product;
 
 import com.loopers.domain.product.ProductEntity;
 import com.loopers.domain.product.ProductRepository;
+import com.loopers.domain.product.ProductWithBrand;
 import com.loopers.domain.product.ProductWithLikeCount;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -22,6 +24,11 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public List<ProductWithLikeCount> findAllOrderBySortType(String sortType) {
         return productJpaRepository.findAllOrderBySortType(sortType);
+    }
+
+    @Override
+    public List<ProductWithBrand> findAllByBrandId(Long brandId, Pageable pageable) {
+        return productJpaRepository.findAllByBrandId(brandId, pageable);
     }
 
     @Override

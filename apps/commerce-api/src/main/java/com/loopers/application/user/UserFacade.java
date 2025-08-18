@@ -6,6 +6,8 @@ import com.loopers.domain.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+
 @RequiredArgsConstructor
 @Component
 public class UserFacade {
@@ -16,7 +18,7 @@ public class UserFacade {
     public UserResult signUp(final UserCriteria.SignUp criteria) {
         final UserResult userResult = UserResult.from(userService.signUp(criteria.toCommand()));
 
-        pointService.initPoint(new PointCommand.Init(criteria.loginId(), 100L));
+        pointService.initPoint(new PointCommand.Init(criteria.loginId(), BigDecimal.valueOf(100L)));
 
         return userResult;
     }

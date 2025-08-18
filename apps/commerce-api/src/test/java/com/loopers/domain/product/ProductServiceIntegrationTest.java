@@ -21,6 +21,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -67,7 +68,7 @@ public class ProductServiceIntegrationTest {
         var product1 = new ProductCommand.Create(
                 "운동복 세트",
                 "그냥 운동할 때 입는 거임",
-                10000,
+                BigDecimal.valueOf(10000),
                 10,
                 brand.getId()
         );
@@ -101,14 +102,14 @@ public class ProductServiceIntegrationTest {
         var product1 = new ProductEntity(
                 "쫄쫄이 티셔츠",
                 "그냥 운동할 때 입는 거임",
-                1000,
+                BigDecimal.valueOf(1000),
                 10,
                 brand.getId()
         );
         var product2 = new ProductEntity(
                 "피마이너스원 콜라보 에어포스",
                 "제일 비싼 지디 콜라보 한정판 신발임",
-                5000,
+                BigDecimal.valueOf(5000),
                 20,
                 brand.getId()
         );
@@ -116,7 +117,7 @@ public class ProductServiceIntegrationTest {
         var product3 = new ProductEntity(
                 "머큐리얼 베이퍼",
                 "적당히 비싼 축구화임",
-                4000,
+                BigDecimal.valueOf(4000),
                 20,
                 brand.getId()
         );
@@ -157,7 +158,7 @@ public class ProductServiceIntegrationTest {
         ProductEntity product = new ProductEntity(
                 "운동화",
                 "편한 운동화",
-                30000,
+                BigDecimal.valueOf(30000),
                 5,
                 brand.getId()
         );
@@ -170,7 +171,7 @@ public class ProductServiceIntegrationTest {
         assertAll(
                 () -> assertThat(productInfo.name()).isEqualTo("운동화"),
                 () -> assertThat(productInfo.description()).isEqualTo("편한 운동화"),
-                () -> assertThat(productInfo.price()).isEqualTo(30000),
+                () -> assertThat(productInfo.price()).isEqualTo(BigDecimal.valueOf(30000)),
                 () -> assertThat(productInfo.stock()).isEqualTo(5),
                 () -> assertThat(productInfo.likeCount()).isEqualTo(0) // 초기 좋아요 수는 0
         );
@@ -181,9 +182,9 @@ public class ProductServiceIntegrationTest {
     void findProductsByProductIds() {
         // arrange
         BrandEntity brand = brandJpaRepository.save(new BrandEntity("아디다스", "아디다스 입니다."));
-        ProductEntity product1 = new ProductEntity("운동화1", "설명1", 10000, 10, brand.getId());
-        ProductEntity product2 = new ProductEntity("운동화2", "설명2", 20000, 20, brand.getId());
-        ProductEntity product3 = new ProductEntity("운동화3", "설명3", 30000, 30, brand.getId());
+        ProductEntity product1 = new ProductEntity("운동화1", "설명1", BigDecimal.valueOf(10000), 10, brand.getId());
+        ProductEntity product2 = new ProductEntity("운동화2", "설명2", BigDecimal.valueOf(20000), 20, brand.getId());
+        ProductEntity product3 = new ProductEntity("운동화3", "설명3", BigDecimal.valueOf(30000), 30, brand.getId());
 
         ProductEntity savedProduct1 = productRepository.save(product1);
         ProductEntity savedProduct2 = productRepository.save(product2);
@@ -197,8 +198,8 @@ public class ProductServiceIntegrationTest {
                 () -> assertThat(products.size()).isEqualTo(2),
                 () -> assertThat(products.get(0).name()).isEqualTo("운동화1"),
                 () -> assertThat(products.get(1).name()).isEqualTo("운동화2"),
-                () -> assertThat(products.get(0).price()).isEqualTo(10000),
-                () -> assertThat(products.get(1).price()).isEqualTo(20000),
+                () -> assertThat(products.get(0).price()).isEqualByComparingTo(BigDecimal.valueOf(10000)),
+                () -> assertThat(products.get(1).price()).isEqualByComparingTo(BigDecimal.valueOf(20000)),
                 () -> assertThat(products.get(0).stock()).isEqualTo(10),
                 () -> assertThat(products.get(1).stock()).isEqualTo(20)
         );
@@ -217,9 +218,9 @@ public class ProductServiceIntegrationTest {
         ));
 
         BrandEntity brand = brandJpaRepository.save(new BrandEntity("아디다스", "아디다스 입니다."));
-        ProductEntity product1 = new ProductEntity("운동화1", "설명1", 10000, 10, brand.getId());
-        ProductEntity product2 = new ProductEntity("운동화2", "설명2", 20000, 20, brand.getId());
-        ProductEntity product3 = new ProductEntity("운동화3", "설명3", 30000, 30, brand.getId());
+        ProductEntity product1 = new ProductEntity("운동화1", "설명1", BigDecimal.valueOf(10000), 10, brand.getId());
+        ProductEntity product2 = new ProductEntity("운동화2", "설명2", BigDecimal.valueOf(20000), 20, brand.getId());
+        ProductEntity product3 = new ProductEntity("운동화3", "설명3", BigDecimal.valueOf(30000), 30, brand.getId());
 
         ProductEntity savedProduct1 = productRepository.save(product1);
         ProductEntity savedProduct2 = productRepository.save(product2);

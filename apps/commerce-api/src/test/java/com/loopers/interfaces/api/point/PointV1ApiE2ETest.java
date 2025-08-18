@@ -15,6 +15,8 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 
+import java.math.BigDecimal;
+
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.springframework.http.HttpMethod.POST;
@@ -83,7 +85,7 @@ public class PointV1ApiE2ETest {
                     () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK),
                     () -> assertThat(response.getBody()).isNotNull(),
                     () -> assertThat(response.getBody().data().loginId()).isEqualTo(userId),
-                    () -> assertThat(response.getBody().data().amount()).isGreaterThanOrEqualTo(100)
+                    () -> assertThat(response.getBody().data().amount()).isGreaterThanOrEqualTo(BigDecimal.valueOf(100))
             );
         }
 
@@ -126,11 +128,11 @@ public class PointV1ApiE2ETest {
 
             userFacade.signUp(userCriteria);
 
-            Long chargeAmount = 1000L;
+            BigDecimal chargeAmount = BigDecimal.valueOf(1000);
 
             HttpHeaders headers = new HttpHeaders();
             headers.set("X-USER-ID", "loopers123");
-            HttpEntity<Long> requestEntity = new HttpEntity<>(chargeAmount, headers);
+            HttpEntity<BigDecimal> requestEntity = new HttpEntity<>(chargeAmount, headers);
 
             // act
             ParameterizedTypeReference<ApiResponse<PointV1Dto.GetResponse>> responseType = new ParameterizedTypeReference<>() {
@@ -143,9 +145,8 @@ public class PointV1ApiE2ETest {
                     () -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK),
                     () -> assertThat(response.getBody()).isNotNull(),
                     () -> assertThat(response.getBody().data().loginId()).isEqualTo("loopers123"),
-                    () -> assertThat(response.getBody().data().amount()).isEqualTo(1100L) // 초기 100 + 충전 1000
+                    () -> assertThat(response.getBody().data().amount()).isEqualByComparingTo(BigDecimal.valueOf(1100)) // 초기 100 + 충전 1000
             );
-
         }
 
         @DisplayName("존재하지 않는 유저로 요청할 경우, `404 Not Found` 응답을 반환한다.")

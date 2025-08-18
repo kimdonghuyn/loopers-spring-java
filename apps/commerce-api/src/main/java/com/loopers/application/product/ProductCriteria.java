@@ -2,12 +2,14 @@ package com.loopers.application.product;
 
 import com.loopers.domain.product.ProductCommand;
 
+import java.math.BigDecimal;
+
 public class
 ProductCriteria {
     public record Create(
             String name,
             String description,
-            int price,
+            BigDecimal price,
             int stock,
             Long brandId
     ) {

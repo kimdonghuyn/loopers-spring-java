@@ -33,6 +33,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
@@ -95,14 +96,14 @@ public class OrderServiceIntegrationTest {
         var product1 = new ProductCommand.Create(
                 "운동복 세트",
                 "그냥 운동할 때 입는 거임",
-                10000,
+                BigDecimal.valueOf(10000),
                 10,
                 1L
         );
         var product2 = new ProductCommand.Create(
                 "운동화",
                 "그냥 운동할 때 신는 거임",
-                20000,
+                BigDecimal.valueOf(20000),
                 10,
                 1L
         );
@@ -111,8 +112,8 @@ public class OrderServiceIntegrationTest {
 
         var orderCommand = new OrderCommand.Order(
                 1L,
-                List.of(new OrderCommand.OrderItem(1L, new Quantity(1), 10000),
-                        new OrderCommand.OrderItem(2L, new Quantity(2), 20000))
+                List.of(new OrderCommand.OrderItem(1L, new Quantity(1), BigDecimal.valueOf(10000)),
+                        new OrderCommand.OrderItem(2L, new Quantity(2),  BigDecimal.valueOf(20000)))
         );
 
         // act
@@ -126,7 +127,7 @@ public class OrderServiceIntegrationTest {
                 () -> assertThat(orderInfo.orderItems().size()).isEqualTo(2),
                 () -> assertThat(orderInfo.orderItems().get(0).getProductId()).isEqualTo(1L),
                 () -> assertThat(orderInfo.orderItems().get(0).getQuantity().getQuantity()).isEqualTo(1),
-                () -> assertThat(orderInfo.totalPrice()).isEqualTo(50000) // 10000 * 1 + 20000 * 2
+                () -> assertThat(orderInfo.totalPrice()).isEqualTo(BigDecimal.valueOf(50000)) // 10000 * 1 + 20000 * 2
         );
     }
 
@@ -144,7 +145,7 @@ public class OrderServiceIntegrationTest {
 
         pointService.initPoint(new PointCommand.Init(
                 "loopers123",
-                30000L
+                BigDecimal.valueOf(30000)
         ));
 
 
@@ -152,21 +153,21 @@ public class OrderServiceIntegrationTest {
         var productCommand = new ProductCommand.Create(
                 "운동복 세트",
                 "그냥 운동할 때 입는 거임",
-                1000,
+                BigDecimal.valueOf(10000),
                 10,
                 brand.getId()
         );
 
         productService.save(productCommand);
 
-        int disCountedTotalPrice = 5000;  // 할인된 금액
+        BigDecimal disCountedTotalPrice = BigDecimal.valueOf(5000);  // 할인된 금액
 
         // act
-        pointService.use(new PointCommand.Use(userInfo.loginId().getLoginId(), (long) disCountedTotalPrice));
+        pointService.use(new PointCommand.Use(userInfo.loginId().getLoginId(), disCountedTotalPrice));
 
         // assert
         assertThat(pointRepository.findByLoginId(new LoginId("loopers123")).get().getAmount())
-                .isEqualTo(25000L); // 30000 - 5000 (5 * 10000)
+                .isEqualByComparingTo(BigDecimal.valueOf(25000)); // 30000 - 5000 (5 * 10000)
     }
 
     @Test
@@ -183,7 +184,7 @@ public class OrderServiceIntegrationTest {
 
         pointService.initPoint(new PointCommand.Init(
                 "loopers123",
-                30000L
+                BigDecimal.valueOf(30000)
         ));
 
 
@@ -191,7 +192,7 @@ public class OrderServiceIntegrationTest {
         var productCommand = new ProductCommand.Create(
                 "운동복 세트",
                 "그냥 운동할 때 입는 거임",
-                1000,
+                BigDecimal.valueOf(1000),
                 10,
                 brand.getId()
         );
@@ -199,11 +200,11 @@ public class OrderServiceIntegrationTest {
         productService.save(productCommand);
 
         // act
-        int disCountedTotalPrice = 35000;  // 35개 주문
+        BigDecimal disCountedTotalPrice = BigDecimal.valueOf(35000);  // 35개 주문
 
         // act & assert
         assertThrows(IllegalArgumentException.class, () -> {
-            pointService.use(new PointCommand.Use(userInfo.loginId().getLoginId(), (long) disCountedTotalPrice));
+            pointService.use(new PointCommand.Use(userInfo.loginId().getLoginId(), disCountedTotalPrice));
         });
     }
 
@@ -221,14 +222,14 @@ public class OrderServiceIntegrationTest {
 
         pointService.initPoint(new PointCommand.Init(
                 "loopers123",
-                30000L
+                BigDecimal.valueOf(30000)
         ));
 
         BrandEntity brand = brandJpaRepository.save(new BrandEntity("아디다스", "아디다스 입니다."));
         var productCommand = new ProductCommand.Create(
                 "운동복 세트",
                 "그냥 운동할 때 입는 거임",
-                10000,
+                BigDecimal.valueOf(10000),
                 10,
                 brand.getId()
         );
@@ -268,14 +269,14 @@ public class OrderServiceIntegrationTest {
 
         pointService.initPoint(new PointCommand.Init(
                 "loopers123",
-                30000L
+                BigDecimal.valueOf(30000)
         ));
 
         BrandEntity brand = brandJpaRepository.save(new BrandEntity("아디다스", "아디다스 입니다."));
         var productCommand = new ProductCommand.Create(
                 "운동복 세트",
                 "그냥 운동할 때 입는 거임",
-                10000,
+                BigDecimal.valueOf(10000),
                 0,
                 brand.getId()
         );
@@ -313,14 +314,14 @@ public class OrderServiceIntegrationTest {
 
         pointService.initPoint(new PointCommand.Init(
                 "loopers123",
-                30000L
+                BigDecimal.valueOf(30000)
         ));
 
         BrandEntity brand = brandJpaRepository.save(new BrandEntity("아디다스", "아디다스 입니다."));
         var productCommand = new ProductCommand.Create(
                 "운동복 세트",
                 "그냥 운동할 때 입는 거임",
-                10000,
+                BigDecimal.valueOf(10000),
                 10,   // 초기 재고
                 brand.getId()
         );
@@ -380,11 +381,11 @@ public class OrderServiceIntegrationTest {
         UserInfo user = userService.signUp(new UserCommand.SignUp(
                 "loopers123", "hyun", "loopers@naver.com", "1990-01-01", Gender.F
         ));
-        pointService.initPoint(new PointCommand.Init(user.loginId().getLoginId(), 30000L));
-        long beforePoint = pointRepository.findByLoginId(new LoginId("loopers123")).orElseThrow().getAmount();
+        pointService.initPoint(new PointCommand.Init(user.loginId().getLoginId(), BigDecimal.valueOf(10000L)));
+        BigDecimal beforePoint = pointRepository.findByLoginId(new LoginId("loopers123")).orElseThrow().getAmount();
 
         BrandEntity brand = brandJpaRepository.save(new BrandEntity("아디다스", "아디다스 입니다."));
-        var p = new ProductCommand.Create("운동복 세트", "그냥 운동", 10000, 5, brand.getId());
+        var p = new ProductCommand.Create("운동복 세트", "그냥 운동", BigDecimal.valueOf(10000), 5, brand.getId());
         productService.save(p);
         int beforeStock = productRepository.findById(1L).orElseThrow().getStock();
 
@@ -413,7 +414,7 @@ public class OrderServiceIntegrationTest {
             productService.consume(new ProductCommand.Consume(1L, new Quantity(11)));
         });
 
-        long afterPoint = pointRepository.findByLoginId(new LoginId("loopers123")).orElseThrow().getAmount();
+        BigDecimal afterPoint = pointRepository.findByLoginId(new LoginId("loopers123")).orElseThrow().getAmount();
         assertThat(afterPoint).isEqualTo(beforePoint);
 
         int afterStock = productRepository.findById(1L).orElseThrow().getStock();

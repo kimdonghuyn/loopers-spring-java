@@ -1,5 +1,7 @@
 package com.loopers.domain.product;
 
+import org.springframework.data.domain.Pageable;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -9,6 +11,8 @@ public interface ProductRepository {
     ProductWithLikeCount findDetailById(Long id);
 
     List<ProductWithLikeCount> findAllOrderBySortType(String sortType);
+
+    List<ProductWithBrand> findAllByBrandId(Long brandId, Pageable pageable);
 
     List<ProductWithLikeCount> findAllById(List<Long> productIds);
 

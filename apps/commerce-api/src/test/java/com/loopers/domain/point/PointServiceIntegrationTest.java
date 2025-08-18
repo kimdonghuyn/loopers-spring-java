@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -73,7 +74,7 @@ public class PointServiceIntegrationTest {
         //assert
         assertAll(
                 () -> assertThat(pointInfo.loginId().getLoginId()).isEqualTo("loopers123"),
-                () -> assertThat(pointInfo.amount()).isEqualTo(100)
+                () -> assertThat(pointInfo.amount()).isEqualByComparingTo(BigDecimal.valueOf(100))
         );
     }
 
@@ -113,7 +114,7 @@ public class PointServiceIntegrationTest {
 
         // act
         CoreException exception = assertThrows(CoreException.class, () -> {
-            pointService.charge(new PointCommand.Charge("roopers123", 100L));
+            pointService.charge(new PointCommand.Charge("roopers123", BigDecimal.valueOf(100)));
         });
 
         // assert
@@ -133,17 +134,17 @@ public class PointServiceIntegrationTest {
                         Gender.M
                 ));
 
-        pointService.initPoint(new PointCommand.Init("loopers123", 100L));
+        pointService.initPoint(new PointCommand.Init("loopers123", BigDecimal.valueOf(100)));
 
         // act
-        pointService.charge(new PointCommand.Charge("loopers123", 100L));
+        pointService.charge(new PointCommand.Charge("loopers123", BigDecimal.valueOf(100)));
 
         // assert
         PointInfo pointInfo = pointService.get("loopers123");
         assertAll(
                 () -> assertThat(pointInfo).isNotNull(),
                 () -> assertThat(pointInfo.loginId().getLoginId()).isEqualTo("loopers123"),
-                () -> assertThat(pointInfo.amount()).isEqualTo(200L) // 초기 100 + 충전 100
+                () -> assertThat(pointInfo.amount()).isEqualByComparingTo(BigDecimal.valueOf(200L)) // 초기 100 + 충전 100
         );
     }
 
@@ -160,17 +161,17 @@ public class PointServiceIntegrationTest {
                         Gender.M
                 ));
 
-        pointService.initPoint(new PointCommand.Init("loopers123", 100L));
+        pointService.initPoint(new PointCommand.Init("loopers123", BigDecimal.valueOf(100)));
 
         // act
-        pointService.use(new PointCommand.Use("loopers123", 50L));
+        pointService.use(new PointCommand.Use("loopers123", BigDecimal.valueOf(50)));
 
         // assert
         PointInfo pointInfo = pointService.get("loopers123");
         assertAll(
                 () -> assertThat(pointInfo).isNotNull(),
                 () -> assertThat(pointInfo.loginId().getLoginId()).isEqualTo("loopers123"),
-                () -> assertThat(pointInfo.amount()).isEqualTo(50L) // 초기 100 - 사용 50
+                () -> assertThat(pointInfo.amount()).isEqualByComparingTo(BigDecimal.valueOf(50L)) // 초기 100 - 사용 50
         );
     }
 
@@ -188,14 +189,14 @@ public class PointServiceIntegrationTest {
                         Gender.M
                 ));
 
-        pointService.initPoint(new PointCommand.Init("loopers123", 500L));
+        pointService.initPoint(new PointCommand.Init("loopers123", BigDecimal.valueOf(500)));
 
         int threads = 10;
-        long usePerOrder = 50L;
+        BigDecimal usePerOrder = BigDecimal.valueOf(50);
 
         ExecutorService executor = java.util.concurrent.Executors.newFixedThreadPool(threads);
         var start = new CountDownLatch(1);
-        CountDownLatch done = new CountDownLatch(threads);
+        CountDownLatch latch = new CountDownLatch(threads);
         List<Throwable> errors = Collections.synchronizedList(new java.util.ArrayList<>());
 
         for (int i = 0; i < threads; i++) {
@@ -206,13 +207,13 @@ public class PointServiceIntegrationTest {
                 } catch (Throwable t) {
                     errors.add(t);
                 } finally {
-                    done.countDown();
+                    latch.countDown();
                 }
             });
         }
 
         start.countDown();
-        done.await();
+        latch.await();
         executor.shutdown();
 
         assertThat(errors.isEmpty()).isTrue();
@@ -221,7 +222,7 @@ public class PointServiceIntegrationTest {
         assertAll(
                 () -> assertThat(pointInfo).isNotNull(),
                 () -> assertThat(pointInfo.loginId().getLoginId()).isEqualTo("loopers123"),
-                () -> assertThat(pointInfo.amount()).isEqualTo(0L)
+                () -> assertThat(pointInfo.amount()).isEqualByComparingTo(BigDecimal.ZERO)
         );
     }
 }

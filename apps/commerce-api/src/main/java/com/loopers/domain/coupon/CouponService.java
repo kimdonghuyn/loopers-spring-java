@@ -9,6 +9,7 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -49,7 +50,7 @@ public class CouponService {
     }
 
     @Transactional
-    public int calculateDiscountPrice(final List<Integer> productPrices, final Long couponId) throws ObjectOptimisticLockingFailureException, OptimisticLockException {
+    public BigDecimal calculateDiscountPrice(final List<BigDecimal> productPrices, final Long couponId) throws ObjectOptimisticLockingFailureException, OptimisticLockException {
         final Coupon coupon = couponRepository.findByIdForUpdate(couponId)
                 .orElseThrow(() -> new CoreException(ErrorType.BAD_REQUEST, "쿠폰이 존재하지 않습니다."));
 
@@ -59,16 +60,18 @@ public class CouponService {
 
         coupon.useOnceOrThrow(LocalDateTime.now());
 
-        int discounted = switch (coupon.getDiscountPolicy()) {
-            case FIXED -> productPrices.stream()
-                    .mapToInt(price -> Math.max(price - coupon.getDiscountAmount(), 0))
-                    .sum();
-            case RATE -> productPrices.stream()
-                    .mapToInt(price -> {
-                        int off = (int) Math.round(price * (coupon.getDiscountRate() / 100.0));
-                        return Math.max(price - off, 0);
-                    })
-                    .sum();
+        BigDecimal discounted = switch (coupon.getDiscountPolicy()) {
+            case FIXED ->
+            productPrices.stream()
+                    .reduce(BigDecimal.ZERO, BigDecimal::add)
+                    .subtract(BigDecimal.valueOf(coupon.getDiscountAmount()))
+                    .max(BigDecimal.ZERO);
+            case RATE ->
+            productPrices.stream()
+                    .reduce(BigDecimal.ZERO, BigDecimal::add)
+                    .multiply(BigDecimal.valueOf(1 - coupon.getDiscountRate()))
+                    .max(BigDecimal.ZERO);
+
             default -> throw new CoreException(ErrorType.BAD_REQUEST, "지원하지 않는 할인 정책입니다.");
         };
 
