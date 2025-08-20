@@ -20,4 +20,12 @@ dependencies {
 
     // DataFaker
     implementation("net.datafaker:datafaker:2.4.4")
+
+    //resilience4j
+    implementation("io.github.resilience4j:resilience5j-circuitbreaker")
+    implementation("io.github.resilience4j:resilience4j-java")
+    implementation("org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j")
+
+    // feign
+    implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
 }
