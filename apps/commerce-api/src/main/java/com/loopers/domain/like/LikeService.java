@@ -1,15 +1,19 @@
 package com.loopers.domain.like;
 
+import com.loopers.application.like.LikeEvent;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.exception.ConstraintViolationException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import jakarta.persistence.EntityManager;
-import org.hibernate.exception.ConstraintViolationException;
 
 @Component
 @RequiredArgsConstructor
 public class LikeService {
+
+    private final ApplicationEventPublisher eventPublisher;
     private final LikeRepository likeRepository;
     private final EntityManager em;
 
@@ -19,6 +23,7 @@ public class LikeService {
 
         try {
             likeRepository.save(new LikeEntity(likeCommand.userId(), likeCommand.productId()));
+            eventPublisher.publishEvent(new LikeEvent(likeCommand.productId(), true));
             em.flush();
         } catch (DataIntegrityViolationException | ConstraintViolationException ignored) {
         }
@@ -26,7 +31,10 @@ public class LikeService {
 
     @Transactional
     public void unlike(LikeCommand.Like likeCommand) {
+        if (!isExistLike(likeCommand)) return;
+
         likeRepository.deleteByUserIdAndProductId(likeCommand.userId(), likeCommand.productId());
+        eventPublisher.publishEvent(new LikeEvent(likeCommand.productId(), false));
     }
 
     private boolean isExistLike(LikeCommand.Like likeCommand) {

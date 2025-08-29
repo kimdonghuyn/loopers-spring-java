@@ -40,3 +40,11 @@ X-USER-ID: 135135
 GET {{pg-simulator}}/api/v1/payments?orderId=10012312
 X-USER-ID: 135135
 
+
+### 좋아요
+POST {{commerce-api}}/api/v1/like/products/1
+X-USER-ID: loopers123
+
+### 좋아요 취소
+DELETE {{commerce-api}}/api/v1/like/products/1
+X-USER-ID: loopers123
