@@ -10,7 +10,8 @@ public record OrderInfo(
         Long userId,
         OrderStatus status,
         List<OrderItemEntity> orderItems,
-        BigDecimal totalPrice
+        BigDecimal totalPrice,
+        String orderKey
 ) {
     public static OrderInfo from(OrderEntity orderEntity) {
         return new OrderInfo(
@@ -18,7 +19,8 @@ public record OrderInfo(
                 orderEntity.getUserId(),
                 orderEntity.getStatus(),
                 orderEntity.getOrderItems(),
-                orderEntity.calculateTotalPrice()
+                orderEntity.calculateTotalPrice(),
+                orderEntity.getOrderKey()
         );
     }
 }

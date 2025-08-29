@@ -1,25 +1,36 @@
 package com.loopers.domain.payment;
 
-import com.loopers.support.enums.OrderStatus;
-import com.loopers.support.error.CoreException;
-import com.loopers.support.error.ErrorType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
 public class PaymentService {
 
-    public OrderStatus pay(PaymentCommand.Payment paymentCriteria) {
+    private final PaymentGateway paymentGateway;
+    private final PaymentRepository paymentRepository;
 
-        PaymentCommand.Payment paymentCommand = new PaymentCommand.Payment(paymentCriteria.userId(), paymentCriteria.totalPrice());
-        // 외부 결제 시스템과 연동하여 결제 처리
-         boolean paymentSuccess = true; // 성공 했다고 가정
+    public PaymentInfo.Card.Result requestCardPayment(PaymentCommand.Payment command) {
+        PaymentInfo.Card.Result result = paymentGateway.requestCardPayment(
+                new PaymentCommand.Card.Payment(
+                        command.loginId(),
+                        command.orderKey(),
+                        command.amount(),
+                        command.cardType(),
+                        command.cardNo()
+                )
+        );
 
-         if (!paymentSuccess) {
-             throw new CoreException(ErrorType.INTERNAL_ERROR, "결제 처리에 실패했습니다. 다시 시도해주세요.");
-         }
+        return result;
+    }
 
-         return OrderStatus.COMPLETED;
+    @Transactional
+    public void createPayment(PaymentCommand.CreatePayment command) {
+        paymentRepository.save(PaymentEntity.create(command));
+    }
+
+    public PaymentInfo.Card.Order findCardPaymentResult(String orderKey) {
+        return paymentGateway.findCardOrderResult(orderKey);
     }
 }

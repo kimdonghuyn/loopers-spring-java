@@ -1,5 +1,6 @@
 package com.loopers.domain.coupon;
 
+import com.loopers.domain.user.UserCoupon;
 import com.loopers.support.enums.CouponStatus;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
@@ -57,8 +58,6 @@ public class CouponService {
         if (coupon.getExpiredAt().isBefore(now())) {
             throw new CoreException(ErrorType.BAD_REQUEST, "사용기한이 지난 쿠폰입니다.");
         }
-
-        coupon.useOnceOrThrow(LocalDateTime.now());
 
         BigDecimal discounted = switch (coupon.getDiscountPolicy()) {
             case FIXED ->

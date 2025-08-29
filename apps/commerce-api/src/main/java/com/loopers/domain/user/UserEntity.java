@@ -16,6 +16,7 @@ public class UserEntity extends BaseEntity {
     private String name;
     private Email email;
     private Birth birth;
+    @Enumerated(EnumType.STRING)
     private Gender gender;
 
     public UserEntity(LoginId loginId, String name,Email email, Birth birth, Gender gender) {

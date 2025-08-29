@@ -18,10 +18,7 @@ import com.loopers.domain.product.ProductService;
 import com.loopers.domain.user.*;
 import com.loopers.infrastructure.brand.BrandJpaRepository;
 import com.loopers.infrastructure.product.ProductJpaRepository;
-import com.loopers.support.enums.CouponStatus;
-import com.loopers.support.enums.DiscountPolicy;
-import com.loopers.support.enums.Gender;
-import com.loopers.support.enums.OrderStatus;
+import com.loopers.support.enums.*;
 import com.loopers.support.error.CoreException;
 import com.loopers.utils.DatabaseCleanUp;
 import org.junit.jupiter.api.AfterEach;
@@ -31,7 +28,6 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -123,7 +119,7 @@ public class OrderServiceIntegrationTest {
         assertAll(
                 () -> assertThat(orderInfo).isNotNull(),
                 () -> assertThat(orderInfo.userId()).isEqualTo(1L),
-                () -> assertThat(orderInfo.status()).isEqualTo(OrderStatus.COMPLETED),
+                () -> assertThat(orderInfo.status()).isEqualTo(OrderStatus.PENDING),
                 () -> assertThat(orderInfo.orderItems().size()).isEqualTo(2),
                 () -> assertThat(orderInfo.orderItems().get(0).getProductId()).isEqualTo(1L),
                 () -> assertThat(orderInfo.orderItems().get(0).getQuantity().getQuantity()).isEqualTo(1),
@@ -237,14 +233,17 @@ public class OrderServiceIntegrationTest {
 
         // act
         var orderCriteria = new OrderCriteria.Order(
-                1L,
                 "loopers123",
-                List.of(new OrderCriteria.OrderItem(1L, 2))
+                PaymentMethod.POINT,
+                List.of(new OrderCriteria.OrderItem(1L, 2)),
+                null,
+                null
         );
+
 
         List<ProductInfo> productInfos = productService.getProductsByProductId(List.of(1L));
 
-        OrderCommand.Order orderCommand = orderCriteria.toCommand(productInfos);
+        OrderCommand.Order orderCommand = orderCriteria.toCommand(1L, productInfos, BigDecimal.valueOf(20000));
 
         orderCommand.orderItems().forEach(item ->
                 productService.consume(new ProductCommand.Consume(item.productId(), item.quantity()))
@@ -284,14 +283,16 @@ public class OrderServiceIntegrationTest {
 
         // act
         var orderCriteria = new OrderCriteria.Order(
-                1L,
                 "loopers123",
-                List.of(new OrderCriteria.OrderItem(1L, 2))
+                PaymentMethod.POINT,
+                List.of(new OrderCriteria.OrderItem(1L, 2)),
+                null,
+                null
         );
 
         List<ProductInfo> productInfos = productService.getProductsByProductId(List.of(1L));
 
-        OrderCommand.Order orderCommand = orderCriteria.toCommand(productInfos);
+        OrderCommand.Order orderCommand = orderCriteria.toCommand(1L, productInfos, BigDecimal.valueOf(20000));
 
         // assert
         assertThrows(CoreException.class, () -> {
@@ -399,13 +400,16 @@ public class OrderServiceIntegrationTest {
         } catch (Exception ignore) {
         }
 
-        var criteria = new OrderCriteria.Order(
-                1L,
+        var orderCriteria = new OrderCriteria.Order(
                 "loopers123",
-                List.of(new OrderCriteria.OrderItem(1L, 2))
+                PaymentMethod.POINT,
+                List.of(new OrderCriteria.OrderItem(1L, 2)),
+                null,
+                null
         );
+
         List<ProductInfo> products = productService.getProductsByProductId(List.of(1L));
-        OrderCommand.Order orderCmd = criteria.toCommand(products);
+        OrderCommand.Order orderCmd = orderCriteria.toCommand(1L, products, BigDecimal.valueOf(19000));
 
         Mockito.doThrow(new RuntimeException("force failure during stock update"))
                 .when(productJpaRepository).save(Mockito.any());
