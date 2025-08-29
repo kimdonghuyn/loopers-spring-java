@@ -21,10 +21,13 @@ public class OrderEntity extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private OrderStatus status = OrderStatus.PENDING;
 
+    @Column(name = "order_key", nullable = false, unique = true)
+    private String orderKey;
+
     @OneToMany(mappedBy = "order" , cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItemEntity> orderItems = new ArrayList<>();
 
-    public OrderEntity(Long userId, List<OrderItemEntity> orderItems, OrderStatus status) {
+    public OrderEntity(Long userId, List<OrderItemEntity> orderItems, OrderStatus status, String orderKey) {
         if(userId == null) {
             throw new IllegalArgumentException("userId는 null일 수 없습니다.");
         }
@@ -37,14 +40,26 @@ public class OrderEntity extends BaseEntity {
             throw new IllegalArgumentException("주문 상태는 null일 수 없습니다.");
         }
 
+        if(orderKey == null || orderKey.isEmpty()) {
+            throw new IllegalArgumentException("orderKey는 null이거나 비어있을 수 없습니다.");
+        }
+
         this.userId = userId;
         this.orderItems = orderItems;
         this.status = status;
+        this.orderKey = orderKey;
     }
 
     public BigDecimal calculateTotalPrice() {
         return orderItems.stream()
                 .map(OrderItemEntity::calculateTotalPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public void updateStatus(OrderStatus newStatus) {
+        if (newStatus == null) {
+            throw new IllegalArgumentException("새로운 상태는 null일 수 없습니다.");
+        }
+        this.status = newStatus;
     }
 }

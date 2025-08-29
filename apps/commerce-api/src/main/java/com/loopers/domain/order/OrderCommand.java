@@ -9,4 +9,6 @@ public class OrderCommand{
     }
 
     public record OrderItem(Long productId, Quantity quantity, BigDecimal price) {}
+
+    public record UpdateOrderStatus(String orderKey, String status) {}
 }

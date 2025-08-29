@@ -5,14 +5,13 @@ import com.loopers.support.enums.CouponStatus;
 import com.loopers.support.enums.DiscountPolicy;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Table;
-import jakarta.persistence.Version;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+
+import static jakarta.persistence.EnumType.STRING;
 
 @Getter
 @Entity
@@ -21,6 +20,7 @@ import java.time.LocalDateTime;
 public class Coupon extends BaseEntity {
     private String name;
 
+    @Enumerated(EnumType.STRING)
     private DiscountPolicy discountPolicy;
 
     private Integer discountAmount;
@@ -33,7 +33,7 @@ public class Coupon extends BaseEntity {
 
     private int quantity;
 
-    @Enumerated(value = jakarta.persistence.EnumType.STRING)
+    @Enumerated(value = STRING)
     private CouponStatus status = CouponStatus.ACTIVE;
 
     @Version
@@ -52,7 +52,7 @@ public class Coupon extends BaseEntity {
         this.quantity = quantity;
     }
 
-    public Coupon (
+    public Coupon(
             String name, DiscountPolicy discountPolicy, Integer discountAmount,
             Double discountRate, LocalDateTime issuedAt, LocalDateTime expiredAt, int quantity, CouponStatus status
     ) {
@@ -131,9 +131,9 @@ public class Coupon extends BaseEntity {
     }
 
     public void useOnceOrThrow(LocalDateTime now) {
-    if (this.status == CouponStatus.INACTIVE) {
-        throw new CoreException(ErrorType.BAD_REQUEST, "쿠폰이 활성화 상태가 아닙니다.");
-    }
+        if (this.status == CouponStatus.INACTIVE) {
+            throw new CoreException(ErrorType.BAD_REQUEST, "쿠폰이 활성화 상태가 아닙니다.");
+        }
         this.status = CouponStatus.INACTIVE;
     }
 }

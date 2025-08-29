@@ -2,8 +2,7 @@ package com.loopers.domain.user;
 
 import com.loopers.domain.BaseEntity;
 import com.loopers.support.enums.CouponStatus;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -16,6 +15,7 @@ import java.time.LocalDateTime;
 public class UserCoupon extends BaseEntity {
     private Long userId;
     private Long couponId;
+    @Enumerated(EnumType.STRING)
     private CouponStatus status = CouponStatus.ACTIVE;
     private LocalDateTime usedAt;
 

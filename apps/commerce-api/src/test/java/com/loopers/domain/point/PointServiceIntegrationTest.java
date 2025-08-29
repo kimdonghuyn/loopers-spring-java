@@ -83,7 +83,7 @@ public class PointServiceIntegrationTest {
     void returnsNotFound_whenUserDoesNotExist() {
         // arrange
         UserCommand.SignUp user = new UserCommand.SignUp(
-                "loopers123",
+                "loopers24",
                 "hyun",
                 "loopers@naver.com",
                 "2002-10-10",
@@ -92,7 +92,7 @@ public class PointServiceIntegrationTest {
         userService.signUp(user);
 
         //act
-        PointInfo pointInfo = pointService.get("roopers123");
+        PointInfo pointInfo = pointService.get("roopers126");
 
         // assert
         assertThat(pointInfo).isNull();
