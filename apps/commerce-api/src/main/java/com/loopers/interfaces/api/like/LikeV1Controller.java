@@ -32,7 +32,7 @@ public class LikeV1Controller implements LikeV1ApiSpec {
             @PathVariable Long productId
     ) {
         LikeV1Dto.LikeRequest likeRequest = new LikeV1Dto.LikeRequest(loginId, productId);
-        likeFacade.like(likeRequest.toCriteria(likeRequest));
+        likeFacade.unlike(likeRequest.toCriteria(likeRequest));
 
         return  ApiResponse.success();
     }
