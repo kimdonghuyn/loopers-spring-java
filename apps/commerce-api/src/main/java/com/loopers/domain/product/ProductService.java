@@ -84,18 +84,4 @@ public class ProductService {
         List<ProductWithLikeCount> likedProducts = productRepository.findLikedProductsByUserId(userId);
         return likedProducts.stream().map(ProductInfo::from).collect(Collectors.toList());
     }
-
-    @Transactional
-    public void updateLikeCount(Long productId, boolean isLike) {
-        ProductEntity product = productRepository.findById(productId)
-                .orElseThrow(() -> new CoreException(ErrorType.NOT_FOUND, "해당 상품이 존재하지 않습니다."));
-
-        if (isLike) {
-            product.increaseLikeCount();
-        } else {
-            product.decreaseLikeCount();
-        }
-        
-        productRepository.save(product);
-    }
 }

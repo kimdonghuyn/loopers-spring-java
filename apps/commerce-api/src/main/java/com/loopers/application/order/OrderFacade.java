@@ -9,7 +9,6 @@ import com.loopers.domain.order.OrderService;
 import com.loopers.domain.payment.PaymentCommand;
 import com.loopers.domain.payment.PaymentInfo;
 import com.loopers.domain.payment.PaymentService;
-import com.loopers.domain.point.PointCommand;
 import com.loopers.domain.product.ProductCommand;
 import com.loopers.domain.product.ProductInfo;
 import com.loopers.domain.product.ProductService;
@@ -67,9 +66,11 @@ public class OrderFacade {
                         userCouponInfo.couponId()
                 );
 
+        // 주문
         OrderCommand.Order orderCommand = orderCriteria.toCommand(userResult.id(), productInfos, discountedTotalPrice);
         OrderInfo orderInfo = orderService.order(orderCommand);
 
+        // 결제
         PaymentStrategy strategy = paymentStrategies.get(orderCriteria.paymentMethod().name());
         if (strategy == null) {
             throw new CoreException(ErrorType.BAD_REQUEST, "지원하지 않는 결제 방식입니다: " + orderCriteria.paymentMethod());
@@ -85,6 +86,7 @@ public class OrderFacade {
                 )
         );
 
+        // 재고 차감
         orderCommand.orderItems().forEach(item ->
                 productService.consume(new ProductCommand.Consume(item.productId(), item.quantity()))
         );

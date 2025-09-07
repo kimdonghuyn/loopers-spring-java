@@ -1,23 +1,25 @@
-package com.loopers.domain.payment;
+package com.loopers.interfaces.event;
 
 import com.loopers.application.like.LikeEvent;
-import com.loopers.domain.product.ProductService;
+import com.loopers.application.product.ProductApplicationService;
+import com.loopers.application.product.ProductFacade;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public class ProductEventListener {
 
-    private final ProductService productService;
+    private final ProductApplicationService productApplicationService;
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleLikeEvent(final LikeEvent event) {
-        productService.updateLikeCount(event.productId(), event.isLike());
+        productApplicationService.updateLikeCount(event.productId(), event.isLike());
     }
 }
