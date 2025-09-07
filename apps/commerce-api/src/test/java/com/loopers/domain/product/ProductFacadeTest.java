@@ -127,7 +127,8 @@ public class ProductFacadeTest {
     @DisplayName("단일 상품을 조회할 수 있다")
     void getProduct_success() {
         Long existingProductId = 1L;
-        Optional<ProductResult> result = productFacade.getProduct(existingProductId);
+        String loginId = "loopers123";
+        Optional<ProductResult> result = productFacade.getProduct(existingProductId, loginId);
         assertThat(result).isNotNull();
     }
 

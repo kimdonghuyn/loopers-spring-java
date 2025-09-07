@@ -19,6 +19,7 @@ public class LikeFacade {
 
     private final UserService userService;
     private final LikeService likeService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public void like(LikeCriteria.Like likeCriteria) {
@@ -26,6 +27,7 @@ public class LikeFacade {
         LikeCommand.Like command = likeCriteria.toCommand(userInfo.userId());
 
         likeService.like(command);
+        eventPublisher.publishEvent(new LikeEvent(likeCriteria.loginId(), command.productId(), true));
     }
 
     @Transactional
@@ -34,5 +36,6 @@ public class LikeFacade {
         LikeCommand.Like command = likeCriteria.toCommand(userInfo.userId());
 
         likeService.unlike(command);
+        eventPublisher.publishEvent(new LikeEvent(likeCriteria.loginId(), command.productId(), false));
     }
 }

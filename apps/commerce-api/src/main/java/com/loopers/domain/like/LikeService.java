@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class LikeService {
 
-    private final ApplicationEventPublisher eventPublisher;
     private final LikeRepository likeRepository;
     private final EntityManager em;
 
@@ -23,7 +22,6 @@ public class LikeService {
 
         try {
             likeRepository.save(new LikeEntity(likeCommand.userId(), likeCommand.productId()));
-            eventPublisher.publishEvent(new LikeEvent(likeCommand.productId(), true));
             em.flush();
         } catch (DataIntegrityViolationException | ConstraintViolationException ignored) {
         }
@@ -34,7 +32,6 @@ public class LikeService {
         if (!isExistLike(likeCommand)) return;
 
         likeRepository.deleteByUserIdAndProductId(likeCommand.userId(), likeCommand.productId());
-        eventPublisher.publishEvent(new LikeEvent(likeCommand.productId(), false));
     }
 
     private boolean isExistLike(LikeCommand.Like likeCommand) {

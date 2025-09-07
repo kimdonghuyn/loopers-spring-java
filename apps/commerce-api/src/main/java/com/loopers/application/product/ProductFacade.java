@@ -8,6 +8,7 @@ import com.loopers.domain.product.ProductService;
 import com.loopers.domain.product.ProductWithBrand;
 import com.loopers.support.enums.SortType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 public class ProductFacade {
     private final BrandService brandService;
     private final ProductService productService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public ProductEntity create(final ProductCriteria.Create criteria) {
@@ -46,9 +48,12 @@ public class ProductFacade {
     }
 
     @Transactional(readOnly = true)
-    public Optional<ProductResult> getProduct(Long productId) {
+    public Optional<ProductResult> getProduct(Long productId, String loginId) {
         ProductInfo product = productService.getProduct(productId);
         Optional<BrandInfo> brandInfo = brandService.getBrandInfo(product.brandId());
+
+        eventPublisher.publishEvent(new ProductEvent.ViewEvent(productId, loginId));
+
         return brandInfo.map(info -> ProductResult.from(product, info));
     }
 
