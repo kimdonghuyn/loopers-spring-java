@@ -1,12 +1,9 @@
 package com.loopers.application.payment;
 
-import com.loopers.domain.order.OrderCommand;
 import com.loopers.domain.order.OrderService;
-import com.loopers.domain.payment.PaymentCommand;
-import com.loopers.domain.payment.PaymentGateway;
-import com.loopers.domain.payment.PaymentInfo;
-import com.loopers.domain.payment.PaymentService;
+import com.loopers.domain.payment.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -16,6 +13,7 @@ public class PaymentFacade {
     private final PaymentService paymentService;
     private final OrderService orderService;
     private final PaymentGateway paymentGateway;
+    private final ApplicationEventPublisher eventPublisher;
 
     public void createPayment(PaymentCriteria.createPayment paymentCriteria) {
         PaymentInfo.Card.Get cardPaymentResult = paymentGateway.findCardPaymentResult(
@@ -37,11 +35,7 @@ public class PaymentFacade {
                 )
         );
 
-        orderService.updateOrderStatus(
-                new OrderCommand.UpdateOrderStatus(
-                        cardPaymentResult.orderId(),
-                        paymentCriteria.status()
-                )
-        );
+        // 이벤트 발행 ( 주문 상태 변경 )
+        eventPublisher.publishEvent(new PaymentEvent(cardPaymentResult.orderId(), paymentCriteria.status()));
     }
 }
