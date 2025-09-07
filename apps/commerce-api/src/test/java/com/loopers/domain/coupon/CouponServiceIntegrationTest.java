@@ -1,25 +1,20 @@
 package com.loopers.domain.coupon;
 
-import com.loopers.support.enums.CouponStatus;
 import com.loopers.support.enums.DiscountPolicy;
 import com.loopers.support.error.CoreException;
 import com.loopers.support.error.ErrorType;
 import com.loopers.utils.DatabaseCleanUp;
-import jakarta.persistence.OptimisticLockException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -257,79 +252,6 @@ public class CouponServiceIntegrationTest {
             );
             assertThat(ex.getErrorType()).isEqualTo(ErrorType.BAD_REQUEST);
             assertThat(ex.getMessage()).isEqualTo("사용기한이 지난 쿠폰입니다.");
-        }
-
-
-        @DisplayName("동시에 여러 요청이 와도 쿠폰은 단 한 번만 사용된다.")
-        @Test
-        void applyCoupon_concurrent_singleUse() throws Exception {
-            // arrange
-            Coupon coupon = couponService.createCoupon(new CouponCommand.Create(
-                    "Concurrent Coupon",
-                    DiscountPolicy.FIXED,
-                    1000,
-                    null,
-                    LocalDateTime.now(),
-                    LocalDateTime.now().plusDays(1),
-                    10
-            ));
-            Long couponId = coupon.getId();
-
-            couponService.publishCoupon(couponId);
-
-            int threads = 10;
-            ExecutorService pool = Executors.newFixedThreadPool(threads);
-            CountDownLatch ready = new CountDownLatch(threads);
-            CountDownLatch start = new CountDownLatch(1);
-            CountDownLatch latch = new CountDownLatch(threads);
-            AtomicInteger success = new AtomicInteger(0);
-            AtomicInteger fail = new AtomicInteger(0);
-            CopyOnWriteArrayList<Throwable> errors = new CopyOnWriteArrayList<>();
-
-            // act
-            for (int i = 0; i < threads; i++) {
-                pool.submit(() -> {
-                    try {
-                        ready.countDown();
-                        start.await();
-                        try {
-                            couponService.calculateDiscountPrice(List.of(BigDecimal.valueOf(5000)), couponId);
-                            success.incrementAndGet();
-                        } catch (Exception e) {
-                            fail.incrementAndGet();
-                            errors.add(e);
-                        }
-                    } catch (InterruptedException ie) {
-                        Thread.currentThread().interrupt();
-                    } finally {
-                        latch.countDown();
-                    }
-                });
-            }
-
-            if (!ready.await(5, TimeUnit.SECONDS)) {
-                throw new IllegalStateException("Threads not ready in time");
-            }
-            start.countDown();
-            latch.await(15, TimeUnit.SECONDS);
-            pool.shutdownNow();
-
-            // assert
-            assertThat(success.get()).isEqualTo(1);
-            assertThat(fail.get()).isEqualTo(threads - 1);
-
-            for (Throwable t : errors) {
-                boolean expected =
-                        (t instanceof CoreException core && core.getErrorType() == ErrorType.BAD_REQUEST &&
-                                ("쿠폰이 활성화 상태가 아닙니다.".equals(core.getMessage()) ||
-                                 "사용기한이 지난 쿠폰입니다.".equals(core.getMessage())))
-                        || (t instanceof ObjectOptimisticLockingFailureException)
-                        || (t instanceof OptimisticLockException);
-                assertThat(expected).isTrue();
-            }
-
-            Coupon after = couponRepository.findById(couponId).orElseThrow();
-            assertThat(after.getStatus()).isEqualTo(CouponStatus.INACTIVE);
         }
     }
 

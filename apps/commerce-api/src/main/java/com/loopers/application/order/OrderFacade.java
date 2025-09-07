@@ -9,7 +9,6 @@ import com.loopers.domain.order.OrderService;
 import com.loopers.domain.payment.PaymentCommand;
 import com.loopers.domain.payment.PaymentInfo;
 import com.loopers.domain.payment.PaymentService;
-import com.loopers.domain.product.ProductCommand;
 import com.loopers.domain.product.ProductInfo;
 import com.loopers.domain.product.ProductService;
 import com.loopers.domain.user.UserCouponCommand;
@@ -21,6 +20,7 @@ import com.loopers.support.error.ErrorType;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +41,8 @@ public class OrderFacade {
 
     private final Logger logger = LogManager.getLogger(OrderFacade.class);
     private final PaymentService paymentService;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public OrderResult order(OrderCriteria.Order orderCriteria) {
@@ -66,7 +68,6 @@ public class OrderFacade {
                         userCouponInfo.couponId()
                 );
 
-        // 주문
         OrderCommand.Order orderCommand = orderCriteria.toCommand(userResult.id(), productInfos, discountedTotalPrice);
         OrderInfo orderInfo = orderService.order(orderCommand);
 
@@ -86,10 +87,8 @@ public class OrderFacade {
                 )
         );
 
-        // 재고 차감
-        orderCommand.orderItems().forEach(item ->
-                productService.consume(new ProductCommand.Consume(item.productId(), item.quantity()))
-        );
+        // 주문 완료 이벤트 발행 ( 쿠폰 사용 처리, 재고 차감 )
+        eventPublisher.publishEvent(new OrderEvent(orderCommand, userResult, userCouponInfo));
 
         return OrderResult.from(orderInfo);
     }

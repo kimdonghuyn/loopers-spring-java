@@ -1,8 +1,8 @@
 package com.loopers.interfaces.event;
 
-import com.loopers.application.like.LikeEvent;
 import com.loopers.application.order.OrderEvent;
-import com.loopers.application.product.ProductApplicationService;
+import com.loopers.application.user.UserCouponCriteria;
+import com.loopers.application.user.UserCouponFacade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -15,22 +15,14 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @Slf4j
 @Component
 @RequiredArgsConstructor(access = lombok.AccessLevel.PROTECTED)
-public class ProductEventListener {
+public class UserCouponEventListener {
 
-    private final ProductApplicationService productApplicationService;
+    private final UserCouponFacade userCouponFacade;
 
-    // 좋아요 이벤트가 발생한 후 좋아요 수를 업데이트하는 이벤트 리스너
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleLikeEvent(final LikeEvent event) {
-        productApplicationService.updateLikeCount(event.productId(), event.isLike());
-    }
-
-    // 주문이 완료된 후 재고를 차감하는 이벤트 리스너
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOrderEvent(final OrderEvent event) {
-        productApplicationService.cunsume(event.orderCommand().orderItems());
+        userCouponFacade.useCoupon(new UserCouponCriteria.UseCoupon(event.userCouponInfo().id()));
     }
 }
