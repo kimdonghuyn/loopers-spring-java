@@ -35,6 +35,13 @@ spring:
     activate:
       on-profile: local, test
 
+server:
+  port: 8085
+
+management:
+    server:
+        port: 8090
+
 ---
 spring:
   config:
